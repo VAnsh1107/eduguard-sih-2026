@@ -1,64 +1,70 @@
-/* EduGuard Design Tokens — Apple HIG Ultra-Premium */
+/* EduGuard Design Tokens — Hand-Drawn Brutalism & Earthy Blueprint System */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
 :root {
-  /* Strict Apple Palette */
-  --white: #FFFFFF;
-  --bg: #F5F5F7;
-  --surface: #FFFFFF;
-  --surface-2: #F5F5F7;
+  /* Earthy Parchment & Ink Palette */
+  --bg: #F5F0E8;                /* Warm parchment substrate */
+  --surface: #FCFAF6;           /* Crisp drawing paper */
+  --surface-2: #EDE6DB;         /* Shaded sketch parchment */
   --surface-elevated: #FFFFFF;
-  --border: rgba(0, 0, 0, 0.07);
-  --border-strong: rgba(0, 0, 0, 0.12);
-  --text-primary: #1D1D1F;
-  --text-secondary: #6E6E73;
-  --text-tertiary: #86868B;
+  --white: #FFFFFF;
   
-  /* Accents */
-  --accent: #0071E3;
-  --accent-hover: #0077ED;
-  --accent-light: #E8F1FB;
-  --accent-glow: rgba(0, 113, 227, 0.12);
+  /* Ink Tones */
+  --ink: #2C1810;               /* Deep carbon drawing ink */
+  --text-primary: #2C1810;
+  --text-secondary: #6B574D;    /* Diluted ink pencil */
+  --text-tertiary: #9C887E;     /* Light graphite */
   
-  /* Semantic Status Colors */
-  --danger: #FF3B30;
-  --danger-light: #FFF0EE;
-  --warning: #FF9500;
-  --warning-light: #FFF5E6;
-  --success: #34C759;
-  --success-light: #EDFAF1;
+  /* Border & Grids */
+  --border: #2C1810;            /* Solid hand-drawn ink line */
+  --border-subtle: #D8CFC4;     /* Graph paper grid */
+  --border-strong: #2C1810;
   
-  /* Radii */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
-  --radius-2xl: 32px;
+  /* Earthy Accents */
+  --accent: #8B6914;            /* Amber ink / Ochre */
+  --accent-hover: #73560E;
+  --accent-light: #FBF4E4;
+  --accent-glow: rgba(139, 105, 20, 0.15);
+  
+  /* Hand-Drawn Semantic Status Colors */
+  --danger: #8B4513;            /* Terracotta / Rust ink */
+  --danger-light: #FCEEE8;
+  --warning: #8B6914;           /* Amber ink */
+  --warning-light: #FAF3E6;
+  --success: #4A6741;           /* Forest Moss ink */
+  --success-light: #EDF4EC;
+  
+  /* Brutalist Tactile Hard Shadows */
+  --shadow-sm: 2px 2px 0px #2C1810;
+  --shadow-card: 3px 3px 0px #2C1810;
+  --shadow-hover: 5px 5px 0px #2C1810;
+  --shadow-md: 4px 4px 0px #2C1810;
+  --shadow-lg: 6px 6px 0px #2C1810;
+  
+  /* Asymmetric Organic / Wobbly Radii */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-wobbly: 255px 15px 225px 15px/15px 225px 15px 255px;
+  --radius-wobbly-alt: 15px 225px 15px 255px/255px 15px 225px 15px;
   --radius-full: 980px;
-  
-  /* Multi-Layered Shadows for Depth */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.03), 0 8px 24px rgba(0, 0, 0, 0.05);
-  --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.06), 0 20px 48px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04);
-  
-  /* Easing & Physics */
-  --ease-apple: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  
+
   /* Typography */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+  --font-hand: 'Caveat', cursive, sans-serif;
+  --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
   
   /* Layout */
-  --sidebar-width: 240px;
-  --topbar-height: 52px;
+  --sidebar-width: 250px;
+  --topbar-height: 58px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; animation: none !important; }
+  * { 
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
-
-/* Radix Portal Z-Index Hierarchy */
-[data-radix-popper-content-wrapper] { z-index: 9999 !important; }
-[data-radix-dialog-overlay] { z-index: 9998 !important; }
-[data-radix-dialog-content] { z-index: 9999 !important; }

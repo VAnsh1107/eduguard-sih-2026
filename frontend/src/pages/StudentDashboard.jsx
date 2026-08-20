@@ -255,20 +255,23 @@ export default function StudentDashboard() {
 
         {/* Header Greeting */}
         <div style={{ marginBottom: '28px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+          <div className="stamp-badge" style={{ borderColor: 'var(--ink)', color: 'var(--ink)', marginBottom: '4px' }}>
+            [ STUDENT ACADEMIC JOURNAL ]
+          </div>
+          <h1 style={{ fontSize: '38px', fontFamily: 'var(--font-hand)', fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
             Welcome back, {s.name || user?.name || 'Student'}.
           </h1>
-          <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-            {s.department || 'Computer Science'} · Semester {s.semester || s.year || 2} · <span style={{ fontFamily: 'monospace' }}>{studentId}</span>
+          <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            // {s.department || 'Computer Science'} · Semester {s.semester || s.year || 2} · <span style={{ fontFamily: 'var(--font-mono)' }}>{studentId}</span>
           </div>
         </div>
 
         {/* RISK STATUS FEATURED CARD */}
         <div style={{
           backgroundColor: 'var(--surface)',
-          borderRadius: 'var(--radius-xl)',
-          boxShadow: 'var(--shadow-card)',
-          border: '0.5px solid var(--border)',
+          borderRadius: 'var(--radius-sm)',
+          boxShadow: '4px 4px 0px var(--ink)',
+          border: '2px solid var(--ink)',
           padding: '32px',
           marginBottom: '24px',
           display: 'flex',
@@ -282,24 +285,26 @@ export default function StudentDashboard() {
 
           <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '18px', fontWeight: 700, color: riskColor }}>
-                Status: {riskLevel} Risk Standing
+              <span className="stamp-badge" style={{ borderColor: riskColor, color: riskColor, background: 'var(--surface-2)', fontSize: '13px' }}>
+                [ {riskLevel.toUpperCase()} RISK STANDING ]
               </span>
-              <span style={{ fontSize: '12px', fontWeight: 600, padding: '2px 8px', borderRadius: '980px', backgroundColor: 'var(--surface-2)', color: 'var(--text-secondary)' }}>
+              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-xs)', backgroundColor: 'var(--surface-2)', color: 'var(--ink)', border: '1px solid var(--ink)' }}>
                 {Math.round(confidence)}% Precision
               </span>
             </div>
             
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 14px' }}>
+            <p style={{ fontSize: '13.5px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 14px' }}>
               {riskExplanation}
             </p>
 
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {factors.slice(0, 3).map((factor, i) => (
-                <div key={i} style={{
-                  fontSize: '11px', padding: '3px 10px', borderRadius: '980px',
+                <div key={i} className="stamp-badge" style={{
+                  fontSize: '10px',
                   backgroundColor: factor.direction === 'increases risk' ? 'var(--danger-light)' : 'var(--success-light)',
-                  color: factor.direction === 'increases risk' ? 'var(--danger)' : 'var(--success)', fontWeight: 600
+                  color: factor.direction === 'increases risk' ? 'var(--danger)' : 'var(--success)',
+                  borderColor: factor.direction === 'increases risk' ? 'var(--danger)' : 'var(--success)',
+                  fontWeight: 700
                 }}>
                   {factor.label}
                 </div>
@@ -312,19 +317,22 @@ export default function StudentDashboard() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', marginBottom: '24px' }}>
           
           {/* PERFORMANCE RADAR */}
-          <div style={{ backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-xl)', padding: '24px', boxShadow: 'var(--shadow-card)', border: '0.5px solid var(--border)' }}>
-            <h3 style={{ fontSize: '15px', fontWeight: 700, margin: '0 0 16px', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          <div style={{ backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-sm)', padding: '24px', boxShadow: '3px 3px 0px var(--ink)', border: '2px solid var(--ink)' }}>
+            <div className="stamp-badge" style={{ borderColor: 'var(--ink)', color: 'var(--ink)', marginBottom: '8px' }}>
+              [ 6-AXIS TELEMETRY ]
+            </div>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 16px', color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               Performance Radar Profile
             </h3>
             
             <div style={{ height: '240px', marginBottom: '18px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                  <PolarGrid stroke="var(--border-strong)" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} />
+                  <PolarGrid stroke="var(--ink)" strokeDasharray="3 3" opacity={0.3} />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--ink)', fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 600 }} />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                  <Radar name="Student" dataKey="A" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.25} />
-                  <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', borderRadius: 'var(--radius-sm)' }} />
+                  <Radar name="Student" dataKey="A" stroke="var(--ink)" fill="var(--accent)" fillOpacity={0.3} strokeWidth={2} />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '2px solid var(--ink)', borderRadius: '4px', boxShadow: '2px 2px 0px var(--ink)', fontFamily: 'var(--font-mono)' }} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
@@ -332,11 +340,11 @@ export default function StudentDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {radarData.map(m => (
                 <div key={m.subject} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '90px', fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>{m.subject}</div>
-                  <Progress.Root style={{ flex: 1, height: '6px', backgroundColor: 'var(--surface-2)', borderRadius: '3px', overflow: 'hidden' }} value={m.A}>
+                  <div style={{ width: '90px', fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', fontWeight: 600 }}>{m.subject}</div>
+                  <Progress.Root style={{ flex: 1, height: '8px', backgroundColor: 'var(--surface-2)', border: '1px solid var(--ink)', borderRadius: '2px', overflow: 'hidden' }} value={m.A}>
                     <Progress.Indicator style={{ width: `${m.A}%`, height: '100%', backgroundColor: 'var(--accent)', transition: 'width 0.5s ease' }} />
                   </Progress.Root>
-                  <div style={{ width: '40px', textAlign: 'right', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+                  <div style={{ width: '40px', textAlign: 'right', fontSize: '12px', fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-mono)' }}>
                     {Math.round(m.A)}
                   </div>
                 </div>
@@ -345,7 +353,7 @@ export default function StudentDashboard() {
           </div>
 
           {/* GOALS CARD */}
-          <div style={{ backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-xl)', padding: '24px', boxShadow: 'var(--shadow-card)', border: '0.5px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-sm)', padding: '24px', boxShadow: '3px 3px 0px var(--ink)', border: '2px solid var(--ink)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Trophy size={16} color="var(--accent)" />

@@ -366,51 +366,55 @@ export default function AppShell({ children }) {
           backdrop-filter: blur(4px);
         }
         .topbar-icon-btn {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background: transparent;
-          border: 0.5px solid transparent;
+          width: 36px;
+          height: 36px;
+          border-radius: var(--radius-sm);
+          background: var(--surface);
+          border: 1.5px solid var(--ink);
+          box-shadow: 2px 2px 0px var(--ink);
           display: flex;
           align-items: center;
           justify-content: center;
-          color: var(--text-secondary);
+          color: var(--ink);
           cursor: pointer;
           transition: all 0.15s ease;
           position: relative;
         }
         .topbar-icon-btn:hover {
           background: var(--surface-2);
-          border-color: var(--border-strong);
-          color: var(--text-primary);
+          transform: translate(-1px, -1px);
+          box-shadow: 3px 3px 0px var(--ink);
         }
         .dropdown-item-hover:hover {
           background: var(--surface-2);
-          color: var(--text-primary);
+          color: var(--ink);
         }
         .search-result-item {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 10px 14px;
-          border-radius: var(--radius-md);
-          border: 0.5px solid transparent;
+          border-radius: var(--radius-sm);
+          border: 1px solid transparent;
           background: transparent;
           cursor: pointer;
           width: 100%;
           text-align: left;
+          font-family: var(--font-mono);
           transition: all 0.15s ease;
         }
         .search-result-item:hover, .search-result-item:focus {
           background: var(--surface-2);
-          border-color: var(--border);
+          border-color: var(--ink);
+          box-shadow: 2px 2px 0px var(--ink);
           outline: none;
         }
         .notif-card {
           padding: 12px 14px;
-          border-radius: var(--radius-md);
-          border: 0.5px solid var(--border);
+          border-radius: var(--radius-sm);
+          border: 1.5px solid var(--ink);
           background: var(--surface);
+          box-shadow: 2px 2px 0px var(--ink);
           cursor: pointer;
           transition: all 0.15s ease;
           position: relative;
@@ -420,20 +424,20 @@ export default function AppShell({ children }) {
         }
         .notif-card:hover {
           background: var(--surface-2);
-          border-color: var(--border-strong);
           transform: translateY(-1px);
-          box-shadow: var(--shadow-sm);
+          box-shadow: 3px 3px 0px var(--ink);
         }
         .notif-card.unread {
-          background: rgba(0, 113, 227, 0.04);
-          border-color: rgba(0, 113, 227, 0.15);
+          background: var(--accent-light);
+          border-color: var(--ink);
         }
         .notif-tab-btn {
           padding: 6px 12px;
-          font-size: 12px;
-          font-weight: 500;
-          border-radius: 980px;
-          border: 0.5px solid transparent;
+          font-size: 11.5px;
+          font-family: var(--font-mono);
+          font-weight: 600;
+          border-radius: var(--radius-xs);
+          border: 1px solid transparent;
           background: transparent;
           color: var(--text-secondary);
           cursor: pointer;
@@ -441,9 +445,10 @@ export default function AppShell({ children }) {
         }
         .notif-tab-btn.active {
           background: var(--surface-2);
-          color: var(--text-primary);
-          font-weight: 600;
-          border-color: var(--border);
+          color: var(--ink);
+          font-weight: 700;
+          border: 1.5px solid var(--ink);
+          box-shadow: 1.5px 1.5px 0px var(--ink);
         }
         @keyframes spinSlow {
           0% { transform: rotate(0deg); }
@@ -472,7 +477,7 @@ export default function AppShell({ children }) {
           bottom: 0,
           width: sidebarWidth,
           backgroundColor: 'var(--surface)',
-          borderRight: '0.5px solid var(--border)',
+          borderRight: '2px solid var(--ink)',
           display: sidebarDisplay,
           flexDirection: 'column',
           zIndex: 1001,
@@ -481,38 +486,52 @@ export default function AppShell({ children }) {
       >
         {/* Branding */}
         <div style={{
-          padding: '20px 16px',
-          borderBottom: '0.5px solid var(--border)',
+          padding: '18px 16px',
+          borderBottom: '2px solid var(--ink)',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: isTablet ? 'center' : 'flex-start'
+          alignItems: isTablet ? 'center' : 'flex-start',
+          background: 'var(--surface-2)'
         }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}>
-            <Shield size={20} color="var(--accent)" />
-            {!isTablet && <span style={{ fontSize: '17px', fontWeight: 700, letterSpacing: '-0.02em' }}>EduGuard</span>}
+            <div style={{
+              width: '28px',
+              height: '28px',
+              background: 'var(--ink)',
+              color: 'var(--bg)',
+              borderRadius: 'var(--radius-xs)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 700
+            }}>
+              🛡️
+            </div>
+            {!isTablet && <span style={{ fontFamily: 'var(--font-hand)', fontSize: '26px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>EduGuard</span>}
           </Link>
           {!isTablet && (
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
-              {institutionName}
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
+              // {institutionName}
             </div>
           )}
         </div>
 
         {/* Navigation */}
-        <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '2px', overflowY: 'auto', flex: 1 }}>
+        <div style={{ padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto', flex: 1 }}>
           {currentNav.map((section, idx) => (
-            <div key={idx} style={{ marginBottom: '12px' }}>
+            <div key={idx} style={{ marginBottom: '14px' }}>
               <div className="section-header" style={{
-                fontSize: '11px',
+                fontSize: '10px',
+                fontFamily: 'var(--font-mono)',
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em',
+                letterSpacing: '0.08em',
                 color: 'var(--text-tertiary)',
-                padding: '16px 12px 4px',
-                fontWeight: 600
+                padding: '8px 12px 4px',
+                fontWeight: 700
               }}>
-                {section.section}
+                [ {section.section} ]
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                 {section.items.map((item, itemIdx) => {
                   const Icon = item.icon
                   const currentFull = location.pathname + (location.hash || '')
@@ -536,7 +555,7 @@ export default function AppShell({ children }) {
                       }}
                       title={isTablet ? item.label : undefined}
                     >
-                      <Icon size={18} className="nav-icon" />
+                      <Icon size={16} className="nav-icon" />
                       <span className="nav-label">{item.label}</span>
                     </NavLink>
                   )
@@ -549,25 +568,28 @@ export default function AppShell({ children }) {
         {/* Footer */}
         <div style={{
           marginTop: 'auto',
-          padding: '16px',
-          borderTop: '0.5px solid var(--border)',
+          padding: '14px 16px',
+          borderTop: '2px solid var(--ink)',
+          background: 'var(--surface-2)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '12px',
+          gap: '10px',
           alignItems: isTablet ? 'center' : 'stretch'
         }}>
           {/* User Info */}
           {!isTablet && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '4px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
                 width: '32px',
                 height: '32px',
-                borderRadius: '50%',
-                background: 'var(--accent-light)',
-                color: 'var(--accent)',
+                borderRadius: 'var(--radius-xs)',
+                border: '1.5px solid var(--ink)',
+                background: 'var(--surface)',
+                color: 'var(--ink)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                fontFamily: 'var(--font-mono)',
                 fontWeight: 700,
                 fontSize: '13px',
                 flexShrink: 0
@@ -575,18 +597,14 @@ export default function AppShell({ children }) {
                 {userInitial}
               </div>
               <div style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--ink)' }}>
                   {user?.name || user?.email || 'User'}
                 </div>
-                <div style={{
-                  fontSize: '10px',
-                  background: 'var(--surface-2)',
-                  padding: '2px 6px',
-                  borderRadius: '10px',
-                  display: 'inline-block',
-                  color: 'var(--text-secondary)',
-                  textTransform: 'uppercase',
-                  fontWeight: 600,
+                <div className="stamp-badge" style={{
+                  fontSize: '9.5px',
+                  background: 'var(--surface)',
+                  borderColor: 'var(--ink)',
+                  color: 'var(--ink)',
                   marginTop: '2px'
                 }}>
                   {role}
@@ -604,18 +622,19 @@ export default function AppShell({ children }) {
               alignItems: 'center',
               justifyContent: isTablet ? 'center' : 'flex-start',
               gap: '8px',
-              background: 'transparent',
-              border: 'none',
+              background: 'var(--surface)',
+              border: '1.5px solid var(--danger)',
+              boxShadow: '1.5px 1.5px 0px var(--danger)',
               color: 'var(--danger)',
               cursor: 'pointer',
               padding: isTablet ? '8px 0' : '6px 10px',
-              borderRadius: 'var(--radius-sm)',
-              fontWeight: 500,
-              fontSize: '13px'
+              borderRadius: 'var(--radius-xs)',
+              fontWeight: 700,
+              fontSize: '12px'
             }}
             title={isTablet ? 'Sign out' : undefined}
           >
-            <LogOut size={16} />
+            <LogOut size={14} />
             {!isTablet && <span>Sign out</span>}
           </button>
         </div>
@@ -635,32 +654,32 @@ export default function AppShell({ children }) {
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          height: '52px',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '0.5px solid var(--border)',
+          height: 'var(--topbar-height)',
+          backgroundColor: 'rgba(245, 240, 232, 0.92)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderBottom: '2px solid var(--ink)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 24px',
-          backgroundColor: 'rgba(255, 255, 255, 0.78)'
+          padding: '0 24px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {isMobile && (
               <button
                 onClick={() => setIsMobileOpen(true)}
                 aria-label="Open navigation menu"
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', padding: 0, display: 'flex' }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--ink)', cursor: 'pointer', padding: 0, display: 'flex' }}
               >
                 <Menu size={20} />
               </button>
             )}
-            <h1 style={{ fontSize: '17px', fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>
+            <h1 style={{ fontFamily: 'var(--font-hand)', fontSize: '26px', fontWeight: 700, margin: 0, color: 'var(--ink)' }}>
               {pageTitle}
             </h1>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             {/* Spotlight Search Button */}
             <button
               onClick={() => setSearchOpen(true)}
@@ -668,7 +687,7 @@ export default function AppShell({ children }) {
               aria-label="Quick Search"
               title="Search (Ctrl+K)"
             >
-              <Search size={17} />
+              <Search size={16} />
             </button>
 
             {/* Notifications Popover */}
@@ -678,17 +697,17 @@ export default function AppShell({ children }) {
                   className="topbar-icon-btn"
                   aria-label="View notifications"
                 >
-                  <Bell size={17} />
+                  <Bell size={16} />
                   {unreadCount > 0 && (
                     <div style={{
                       position: 'absolute',
-                      top: '5px',
-                      right: '6px',
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
+                      top: '-3px',
+                      right: '-3px',
+                      width: '10px',
+                      height: '10px',
+                      borderRadius: 'var(--radius-xs)',
                       background: 'var(--danger)',
-                      boxShadow: '0 0 0 2px var(--surface)'
+                      border: '1.5px solid var(--ink)'
                     }} />
                   )}
                 </button>
@@ -697,9 +716,9 @@ export default function AppShell({ children }) {
                 <Popover.Content
                   style={{
                     backgroundColor: 'var(--surface)',
-                    border: '0.5px solid var(--border-strong)',
-                    boxShadow: 'var(--shadow-lg)',
-                    borderRadius: 'var(--radius-xl)',
+                    border: '2px solid var(--ink)',
+                    boxShadow: '5px 5px 0px var(--ink)',
+                    borderRadius: 'var(--radius-sm)',
                     padding: 0,
                     width: '380px',
                     maxWidth: '92vw',
@@ -955,28 +974,33 @@ export default function AppShell({ children }) {
       <Dialog.Root open={searchOpen} onOpenChange={setSearchOpen}>
         <Dialog.Portal>
           <Dialog.Overlay style={{
-            position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)',
-            backdropFilter: 'blur(8px)', zIndex: 9998
+            position: 'fixed', inset: 0, backgroundColor: 'rgba(44, 24, 16, 0.45)',
+            backdropFilter: 'blur(6px)', zIndex: 9998
           }} />
           <Dialog.Content style={{
             position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)',
             width: '90%', maxWidth: '580px', backgroundColor: 'var(--surface)',
-            borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-lg)',
-            border: '0.5px solid var(--border-strong)', padding: 0, zIndex: 9999, outline: 'none',
+            borderRadius: 'var(--radius-sm)', boxShadow: '8px 8px 0px var(--ink)',
+            border: '2.5px solid var(--ink)', padding: 0, zIndex: 9999, outline: 'none',
             overflow: 'hidden', display: 'flex', flexDirection: 'column'
           }}>
             {/* Search Input Bar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', borderBottom: '0.5px solid var(--border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', borderBottom: '2px solid var(--ink)', background: 'var(--surface-2)' }}>
               {searchLoading ? (
-                <div className="search-spinner" style={{ width: 20, height: 20, border: '2px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%' }} />
+                <div className="search-spinner" style={{ width: 20, height: 20, border: '2.5px solid var(--ink)', borderTopColor: 'transparent', borderRadius: '50%' }} />
               ) : (
-                <Search size={20} color="var(--accent)" />
+                <Search size={20} color="var(--ink)" />
               )}
               <input
                 autoFocus
-                placeholder="Search by student name, ID (e.g. Vivaan, STU1003)..."
+                placeholder="Search student or ID (e.g. Vivaan, STU1003)..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
+                style={{
+                  flex: 1, border: 'none', background: 'transparent',
+                  fontFamily: 'var(--font-mono)', fontSize: '15px', fontWeight: 600,
+                  color: 'var(--ink)', outline: 'none'
+                }}
                 onKeyDown={e => {
                   if (e.key === 'Enter' && searchQuery.trim()) {
                     if (searchResults.length > 0) {
@@ -986,10 +1010,6 @@ export default function AppShell({ children }) {
                       navigate(`/teacher?search=${encodeURIComponent(searchQuery)}`)
                     }
                   }
-                }}
-                style={{
-                  flex: 1, background: 'transparent', border: 'none', outline: 'none',
-                  fontSize: '16px', color: 'var(--text-primary)', fontFamily: 'inherit', fontWeight: 500
                 }}
               />
               {searchQuery && (

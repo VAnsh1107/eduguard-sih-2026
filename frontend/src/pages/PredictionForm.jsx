@@ -187,16 +187,26 @@ export default function PredictionForm() {
 
   const inputStyle = {
     width: '100%',
-    height: '38px',
+    height: '40px',
     padding: '0 12px',
-    borderRadius: 'var(--radius-sm)',
-    border: '0.5px solid var(--border-strong)',
+    borderRadius: 'var(--radius-xs)',
+    border: '1.5px solid var(--ink)',
     backgroundColor: 'var(--surface)',
-    color: 'var(--text-primary)',
-    fontSize: '14px',
+    color: 'var(--ink)',
+    fontSize: '13px',
+    fontFamily: 'var(--font-mono)',
     outline: 'none',
-    boxShadow: 'var(--shadow-sm)',
-    transition: 'border-color 0.2s'
+    boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.05)',
+    transition: 'border-color 0.15s'
+  }
+
+  const groupCardStyle = {
+    backgroundColor: 'var(--surface-2)',
+    borderRadius: 'var(--radius-xs)',
+    padding: '16px',
+    border: '1.5px solid var(--ink)',
+    marginBottom: '16px',
+    boxShadow: '2px 2px 0px var(--ink)'
   }
 
   return (

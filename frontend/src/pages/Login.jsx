@@ -14,21 +14,27 @@ const DEMO_ACCOUNTS = [
     email: 'admin@edu.local',
     password: 'changeme',
     desc: 'System analytics & models',
-    badge: '[ DEAN / ADMIN ]'
+    badge: 'DEAN / ADMIN',
+    color: 'var(--accent)',
+    bg: 'var(--accent-light)'
   },
   {
     role: 'Teacher',
     email: 'teacher@edu.local',
     password: 'changeme',
     desc: 'Student risk monitor & directory',
-    badge: '[ ADVISOR ]'
+    badge: 'ADVISOR',
+    color: 'var(--warning)',
+    bg: 'var(--warning-light)'
   },
   {
     role: 'Student',
     email: 'student@edu.local',
     password: 'changeme',
     desc: 'Personal risk & wellbeing tracker',
-    badge: '[ STUDENT HUB ]'
+    badge: 'STUDENT HUB',
+    color: 'var(--success)',
+    bg: 'var(--success-light)'
   },
 ]
 
@@ -99,12 +105,12 @@ export default function Login() {
       <Toaster position="top-right" toastOptions={{
         style: {
           background: 'var(--surface)',
-          color: 'var(--ink)',
-          border: '2px solid var(--ink)',
-          borderRadius: '4px',
-          boxShadow: '3px 3px 0px var(--ink)',
-          fontFamily: 'var(--font-mono)',
-          fontSize: '13px'
+          color: 'var(--text-primary)',
+          border: '1px solid var(--border)',
+          borderRadius: '12px',
+          boxShadow: 'var(--shadow-md)',
+          fontFamily: 'var(--font-sans)',
+          fontSize: '13.5px'
         }
       }} />
 
@@ -117,44 +123,43 @@ export default function Login() {
           width: '100%',
           maxWidth: '440px',
           backgroundColor: 'var(--surface)',
-          border: '2.5px solid var(--ink)',
-          borderRadius: 'var(--radius-sm)',
-          boxShadow: '6px 6px 0px var(--ink)',
-          padding: '36px 32px'
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-xl)',
+          boxShadow: 'var(--shadow-lg)',
+          padding: '40px 36px'
         }}
       >
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: 'var(--radius-xs)',
-            backgroundColor: 'var(--ink)',
-            color: 'var(--bg)',
+            width: '44px',
+            height: '44px',
+            borderRadius: 'var(--radius-md)',
+            background: 'linear-gradient(135deg, var(--accent) 0%, #3B82F6 100%)',
+            color: 'white',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '20px',
-            marginBottom: '10px'
+            fontSize: '22px',
+            marginBottom: '12px',
+            boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
           }}>
-            🛡️
+            <Shield size={22} />
           </div>
           <h1 style={{
-            fontFamily: 'var(--font-hand)',
-            fontSize: '36px',
-            fontWeight: 700,
-            color: 'var(--ink)',
-            lineHeight: 1.1,
+            fontSize: '26px',
+            fontWeight: 800,
+            color: 'var(--text-primary)',
+            letterSpacing: '-0.025em',
             margin: '0 0 6px 0'
           }}>
             EduGuard Portal
           </h1>
           <p style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '12px',
+            fontSize: '13.5px',
             color: 'var(--text-secondary)'
           }}>
-            // Institutional Early-Warning & Retention System
+            Institutional Early-Warning & Retention Platform
           </p>
         </div>
 
@@ -162,17 +167,13 @@ export default function Login() {
         <div style={{ marginBottom: '24px' }}>
           <div style={{
             fontSize: '11px',
-            fontFamily: 'var(--font-mono)',
             fontWeight: 700,
             textTransform: 'uppercase',
-            letterSpacing: '0.04em',
+            letterSpacing: '0.05em',
             color: 'var(--text-tertiary)',
-            marginBottom: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
+            marginBottom: '10px'
           }}>
-            <span>[ 1-CLICK DEMO ACCESS ]</span>
+            1-CLICK DEMO ACCESS
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -186,27 +187,26 @@ export default function Login() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '10px 14px',
-                  borderRadius: 'var(--radius-xs)',
-                  border: '1.5px solid var(--ink)',
+                  padding: '12px 14px',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border)',
                   backgroundColor: 'var(--surface-2)',
-                  color: 'var(--ink)',
+                  color: 'var(--text-primary)',
                   cursor: 'pointer',
                   textAlign: 'left',
-                  boxShadow: '2px 2px 0px var(--ink)',
                   transition: 'all 0.15s ease'
                 }}
               >
                 <div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12.5px', fontWeight: 700 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700 }}>
                     {acc.role} Account
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
                     {acc.desc}
                   </div>
                 </div>
 
-                <div className="stamp-badge" style={{ fontSize: '9px', borderColor: 'var(--ink)', background: 'var(--surface)' }}>
+                <div className="stamp-badge" style={{ fontSize: '10px', backgroundColor: acc.bg, color: acc.color, border: 'none' }}>
                   {activeDemo === acc.role ? 'Logging in...' : acc.badge}
                 </div>
               </button>
@@ -219,19 +219,19 @@ export default function Login() {
           alignItems: 'center',
           gap: '12px',
           margin: '20px 0',
-          fontFamily: 'var(--font-mono)',
-          fontSize: '11px',
-          color: 'var(--text-tertiary)'
+          fontSize: '11.5px',
+          color: 'var(--text-tertiary)',
+          fontWeight: 600
         }}>
-          <div style={{ flex: 1, height: '1.5px', backgroundColor: 'var(--border-subtle)' }} />
-          <span>OR SIGN IN MANUALLY</span>
-          <div style={{ flex: 1, height: '1.5px', backgroundColor: 'var(--border-subtle)' }} />
+          <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }} />
+          <span>OR SIGN IN WITH CREDENTIALS</span>
+          <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }} />
         </div>
 
         {/* Credentials Form */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--ink)', marginBottom: '6px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
               Institutional Email
             </label>
             <input
@@ -243,21 +243,19 @@ export default function Login() {
               style={{
                 width: '100%',
                 height: '42px',
-                padding: '0 12px',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '13px',
-                color: 'var(--ink)',
+                padding: '0 14px',
+                fontSize: '13.5px',
+                color: 'var(--text-primary)',
                 backgroundColor: 'var(--surface-2)',
-                border: '1.5px solid var(--ink)',
-                borderRadius: 'var(--radius-xs)',
-                boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.05)',
+                border: '1px solid var(--border-strong)',
+                borderRadius: 'var(--radius-sm)',
                 outline: 'none'
               }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--ink)', marginBottom: '6px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
               Password
             </label>
             <div style={{ position: 'relative' }}>
@@ -270,14 +268,12 @@ export default function Login() {
                 style={{
                   width: '100%',
                   height: '42px',
-                  padding: '0 36px 0 12px',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '13px',
-                  color: 'var(--ink)',
+                  padding: '0 36px 0 14px',
+                  fontSize: '13.5px',
+                  color: 'var(--text-primary)',
                   backgroundColor: 'var(--surface-2)',
-                  border: '1.5px solid var(--ink)',
-                  borderRadius: 'var(--radius-xs)',
-                  boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.05)',
+                  border: '1px solid var(--border-strong)',
+                  borderRadius: 'var(--radius-sm)',
                   outline: 'none'
                 }}
               />
@@ -306,14 +302,13 @@ export default function Login() {
             disabled={loading}
             style={{
               marginTop: '8px',
-              height: '46px',
-              backgroundColor: 'var(--ink)',
-              color: 'var(--bg)',
-              border: '2px solid var(--ink)',
-              boxShadow: '3px 3px 0px var(--accent)',
-              borderRadius: 'var(--radius-xs)',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '13.5px',
+              height: '44px',
+              background: 'linear-gradient(135deg, var(--accent) 0%, #3B82F6 100%)',
+              color: 'white',
+              border: 'none',
+              boxShadow: '0 4px 14px rgba(79, 70, 229, 0.35)',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '14px',
               fontWeight: 700,
               display: 'flex',
               alignItems: 'center',

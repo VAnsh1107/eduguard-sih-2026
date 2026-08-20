@@ -233,15 +233,15 @@ export default function TeacherDashboard() {
     width: '100%',
     height: '44px',
     backgroundColor: 'var(--surface)',
-    border: '2px solid var(--ink)',
-    borderRadius: 'var(--radius-xs)',
+    border: '1px solid var(--border-strong)',
+    borderRadius: 'var(--radius-md)',
     padding: '0 16px',
     paddingLeft: '40px',
     fontSize: '14px',
-    fontFamily: 'var(--font-mono)',
-    color: 'var(--ink)',
+    fontFamily: 'var(--font-sans)',
+    color: 'var(--text-primary)',
     outline: 'none',
-    boxShadow: '3px 3px 0px var(--ink)'
+    boxShadow: 'var(--shadow-sm)'
   }
 
   const filterRowStyle = {
@@ -255,14 +255,14 @@ export default function TeacherDashboard() {
   const selectTriggerStyle = {
     height: '38px',
     backgroundColor: 'var(--surface)',
-    border: '1.5px solid var(--ink)',
-    borderRadius: 'var(--radius-xs)',
-    boxShadow: '2px 2px 0px var(--ink)',
-    padding: '0 12px',
-    fontSize: '12.5px',
-    fontFamily: 'var(--font-mono)',
+    border: '1px solid var(--border-strong)',
+    borderRadius: 'var(--radius-sm)',
+    boxShadow: 'var(--shadow-sm)',
+    padding: '0 14px',
+    fontSize: '13px',
+    fontFamily: 'var(--font-sans)',
     fontWeight: 600,
-    color: 'var(--ink)',
+    color: 'var(--text-primary)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -273,37 +273,37 @@ export default function TeacherDashboard() {
 
   const selectContentStyle = {
     backgroundColor: 'var(--surface)',
-    border: '2px solid var(--ink)',
-    borderRadius: 'var(--radius-xs)',
-    boxShadow: '4px 4px 0px var(--ink)',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-md)',
+    boxShadow: 'var(--shadow-lg)',
     padding: '4px',
     zIndex: 100,
-    fontFamily: 'var(--font-mono)'
+    fontFamily: 'var(--font-sans)'
   }
 
   const selectItemStyle = {
-    height: '32px',
-    padding: '0 10px',
-    fontSize: '12.5px',
-    fontFamily: 'var(--font-mono)',
-    color: 'var(--ink)',
+    height: '34px',
+    padding: '0 12px',
+    fontSize: '13px',
+    fontFamily: 'var(--font-sans)',
+    color: 'var(--text-primary)',
     display: 'flex',
     alignItems: 'center',
-    borderRadius: '2px',
+    borderRadius: 'var(--radius-xs)',
     cursor: 'pointer',
     outline: 'none'
   }
 
   const buttonStyle = {
     height: '38px',
-    padding: '0 16px',
-    backgroundColor: 'var(--ink)',
-    border: '2px solid var(--ink)',
-    borderRadius: 'var(--radius-xs)',
-    boxShadow: '2px 2px 0px var(--accent)',
-    color: 'var(--bg)',
-    fontSize: '13px',
-    fontFamily: 'var(--font-mono)',
+    padding: '0 18px',
+    background: 'linear-gradient(135deg, var(--accent) 0%, #3B82F6 100%)',
+    border: 'none',
+    borderRadius: 'var(--radius-sm)',
+    boxShadow: '0 3px 10px rgba(79, 70, 229, 0.3)',
+    color: 'white',
+    fontSize: '13.5px',
+    fontFamily: 'var(--font-sans)',
     fontWeight: 700,
     display: 'flex',
     alignItems: 'center',
@@ -313,9 +313,9 @@ export default function TeacherDashboard() {
 
   const tableCardStyle = {
     backgroundColor: 'var(--surface)',
-    border: '2px solid var(--ink)',
-    borderRadius: 'var(--radius-sm)',
-    boxShadow: '4px 4px 0px var(--ink)',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-lg)',
+    boxShadow: 'var(--shadow-card)',
     overflow: 'hidden',
     marginTop: '16px'
   }

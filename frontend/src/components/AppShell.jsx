@@ -368,53 +368,52 @@ export default function AppShell({ children }) {
         .topbar-icon-btn {
           width: 36px;
           height: 36px;
-          border-radius: var(--radius-sm);
+          border-radius: var(--radius-md);
           background: var(--surface);
-          border: 1.5px solid var(--ink);
-          box-shadow: 2px 2px 0px var(--ink);
+          border: 1px solid var(--border);
+          box-shadow: var(--shadow-sm);
           display: flex;
           align-items: center;
           justify-content: center;
-          color: var(--ink);
+          color: var(--text-secondary);
           cursor: pointer;
           transition: all 0.15s ease;
           position: relative;
         }
         .topbar-icon-btn:hover {
           background: var(--surface-2);
-          transform: translate(-1px, -1px);
-          box-shadow: 3px 3px 0px var(--ink);
+          color: var(--text-primary);
+          border-color: var(--border-strong);
         }
         .dropdown-item-hover:hover {
           background: var(--surface-2);
-          color: var(--ink);
+          color: var(--text-primary);
         }
         .search-result-item {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 10px 14px;
-          border-radius: var(--radius-sm);
+          border-radius: var(--radius-md);
           border: 1px solid transparent;
           background: transparent;
           cursor: pointer;
           width: 100%;
           text-align: left;
-          font-family: var(--font-mono);
+          font-family: var(--font-sans);
           transition: all 0.15s ease;
         }
         .search-result-item:hover, .search-result-item:focus {
           background: var(--surface-2);
-          border-color: var(--ink);
-          box-shadow: 2px 2px 0px var(--ink);
+          border-color: var(--border);
           outline: none;
         }
         .notif-card {
           padding: 12px 14px;
-          border-radius: var(--radius-sm);
-          border: 1.5px solid var(--ink);
+          border-radius: var(--radius-md);
+          border: 1px solid var(--border);
           background: var(--surface);
-          box-shadow: 2px 2px 0px var(--ink);
+          box-shadow: var(--shadow-sm);
           cursor: pointer;
           transition: all 0.15s ease;
           position: relative;
@@ -424,19 +423,20 @@ export default function AppShell({ children }) {
         }
         .notif-card:hover {
           background: var(--surface-2);
+          border-color: var(--border-strong);
           transform: translateY(-1px);
-          box-shadow: 3px 3px 0px var(--ink);
+          box-shadow: var(--shadow-md);
         }
         .notif-card.unread {
           background: var(--accent-light);
-          border-color: var(--ink);
+          border-color: rgba(79, 70, 229, 0.2);
         }
         .notif-tab-btn {
           padding: 6px 12px;
-          font-size: 11.5px;
-          font-family: var(--font-mono);
+          font-size: 12px;
+          font-family: var(--font-sans);
           font-weight: 600;
-          border-radius: var(--radius-xs);
+          border-radius: var(--radius-full);
           border: 1px solid transparent;
           background: transparent;
           color: var(--text-secondary);
@@ -445,10 +445,9 @@ export default function AppShell({ children }) {
         }
         .notif-tab-btn.active {
           background: var(--surface-2);
-          color: var(--ink);
+          color: var(--text-primary);
           font-weight: 700;
-          border: 1.5px solid var(--ink);
-          box-shadow: 1.5px 1.5px 0px var(--ink);
+          border: 1px solid var(--border);
         }
         @keyframes spinSlow {
           0% { transform: rotate(0deg); }
@@ -477,7 +476,7 @@ export default function AppShell({ children }) {
           bottom: 0,
           width: sidebarWidth,
           backgroundColor: 'var(--surface)',
-          borderRight: '2px solid var(--ink)',
+          borderRight: '1px solid var(--border)',
           display: sidebarDisplay,
           flexDirection: 'column',
           zIndex: 1001,
@@ -486,52 +485,52 @@ export default function AppShell({ children }) {
       >
         {/* Branding */}
         <div style={{
-          padding: '18px 16px',
-          borderBottom: '2px solid var(--ink)',
+          padding: '18px 20px',
+          borderBottom: '1px solid var(--border)',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: isTablet ? 'center' : 'flex-start',
-          background: 'var(--surface-2)'
+          alignItems: isTablet ? 'center' : 'flex-start'
         }}>
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
             <div style={{
-              width: '28px',
-              height: '28px',
-              background: 'var(--ink)',
-              color: 'var(--bg)',
-              borderRadius: 'var(--radius-xs)',
+              width: '32px',
+              height: '32px',
+              background: 'linear-gradient(135deg, var(--accent) 0%, #3B82F6 100%)',
+              color: 'white',
+              borderRadius: 'var(--radius-sm)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(79, 70, 229, 0.3)',
               fontWeight: 700
             }}>
-              🛡️
+              <Shield size={18} />
             </div>
-            {!isTablet && <span style={{ fontFamily: 'var(--font-hand)', fontSize: '26px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>EduGuard</span>}
+            {!isTablet && <span style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>EduGuard</span>}
           </Link>
           {!isTablet && (
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
-              // {institutionName}
+            <div style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
+              {institutionName}
             </div>
           )}
         </div>
 
         {/* Navigation */}
-        <div style={{ padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto', flex: 1 }}>
+        <div style={{ padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto', flex: 1 }}>
           {currentNav.map((section, idx) => (
             <div key={idx} style={{ marginBottom: '14px' }}>
               <div className="section-header" style={{
-                fontSize: '10px',
-                fontFamily: 'var(--font-mono)',
+                fontSize: '11px',
+                fontFamily: 'var(--font-sans)',
                 textTransform: 'uppercase',
-                letterSpacing: '0.08em',
+                letterSpacing: '0.05em',
                 color: 'var(--text-tertiary)',
-                padding: '8px 12px 4px',
+                padding: '6px 12px 6px',
                 fontWeight: 700
               }}>
-                [ {section.section} ]
+                {section.section}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {section.items.map((item, itemIdx) => {
                   const Icon = item.icon
                   const currentFull = location.pathname + (location.hash || '')
@@ -555,7 +554,7 @@ export default function AppShell({ children }) {
                       }}
                       title={isTablet ? item.label : undefined}
                     >
-                      <Icon size={16} className="nav-icon" />
+                      <Icon size={17} className="nav-icon" />
                       <span className="nav-label">{item.label}</span>
                     </NavLink>
                   )
@@ -569,8 +568,8 @@ export default function AppShell({ children }) {
         <div style={{
           marginTop: 'auto',
           padding: '14px 16px',
-          borderTop: '2px solid var(--ink)',
-          background: 'var(--surface-2)',
+          borderTop: '1px solid var(--border)',
+          backgroundColor: 'var(--surface-2)',
           display: 'flex',
           flexDirection: 'column',
           gap: '10px',
@@ -580,16 +579,15 @@ export default function AppShell({ children }) {
           {!isTablet && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: 'var(--radius-xs)',
-                border: '1.5px solid var(--ink)',
-                background: 'var(--surface)',
-                color: 'var(--ink)',
+                width: '34px',
+                height: '34px',
+                borderRadius: 'var(--radius-full)',
+                background: 'var(--accent-light)',
+                color: 'var(--accent)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontFamily: 'var(--font-mono)',
+                fontFamily: 'var(--font-sans)',
                 fontWeight: 700,
                 fontSize: '13px',
                 flexShrink: 0
@@ -597,14 +595,14 @@ export default function AppShell({ children }) {
                 {userInitial}
               </div>
               <div style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--ink)' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)' }}>
                   {user?.name || user?.email || 'User'}
                 </div>
                 <div className="stamp-badge" style={{
-                  fontSize: '9.5px',
+                  fontSize: '10px',
                   background: 'var(--surface)',
-                  borderColor: 'var(--ink)',
-                  color: 'var(--ink)',
+                  color: 'var(--accent)',
+                  borderColor: 'rgba(79, 70, 229, 0.2)',
                   marginTop: '2px'
                 }}>
                   {role}
@@ -623,14 +621,13 @@ export default function AppShell({ children }) {
               justifyContent: isTablet ? 'center' : 'flex-start',
               gap: '8px',
               background: 'var(--surface)',
-              border: '1.5px solid var(--danger)',
-              boxShadow: '1.5px 1.5px 0px var(--danger)',
+              border: '1px solid rgba(225, 29, 72, 0.2)',
               color: 'var(--danger)',
               cursor: 'pointer',
-              padding: isTablet ? '8px 0' : '6px 10px',
-              borderRadius: 'var(--radius-xs)',
-              fontWeight: 700,
-              fontSize: '12px'
+              padding: isTablet ? '8px 0' : '7px 12px',
+              borderRadius: 'var(--radius-sm)',
+              fontWeight: 600,
+              fontSize: '12.5px'
             }}
             title={isTablet ? 'Sign out' : undefined}
           >
@@ -655,14 +652,14 @@ export default function AppShell({ children }) {
           top: 0,
           zIndex: 100,
           height: 'var(--topbar-height)',
-          backgroundColor: 'rgba(245, 240, 232, 0.92)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          borderBottom: '2px solid var(--ink)',
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 24px'
+          padding: '0 28px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {isMobile && (

@@ -1,0 +1,21 @@
+{
+  "training_date": "2026-08-19 23:43:17",
+  "institution_id": 1,
+  "n_samples": 5000,
+  "accuracy": 0.872,
+  "f1_score": 0.8688,
+  "feature_importances": {
+    "attendance_rate": 0.2567911964536659,
+    "gpa": 0.15087458669187165,
+    "assignment_submission_rate": 0.15474653267596655,
+    "lms_login_frequency": 0.041115838906801046,
+    "library_visits": 0.045749305004094604,
+    "socioeconomic_score": 0.07719531634887844,
+    "scholarship_recipient": 0.06674281536663544,
+    "family_income_bracket": 0.029191489317158217,
+    "previous_backlogs": 0.041917212466630466,
+    "distance_from_college": 0.037345840765518126,
+    "extracurricular_participation": 0.03464939650679699,
+    "mental_health_score": 0.06368043969366026
+  }
+}

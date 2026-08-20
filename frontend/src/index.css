@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base resets ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #09090b;
+  color: #f4f4f5;
+  font-family: 'Geist', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ── Custom scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #18181b; }
+::-webkit-scrollbar-thumb {
+  background: #3b82f6;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: #60a5fa; }
+
+/* ── Risk badge base styles ───────────────────────────────────── */
+.risk-low    { @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/20; }
+.risk-medium { @apply bg-amber-500/10 text-amber-400 border border-amber-500/20; }
+.risk-high   { @apply bg-rose-500/10 text-rose-400 border border-rose-500/20; }
+
+/* ── Glass card surface ───────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Shimmer loader ───────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.8s infinite;
+}
+
+/* ── GSAP page reveal initial state ──────────────────────────── */
+.gsap-hidden { opacity: 0; transform: translateY(32px); }
+
+/* ── Noise texture overlay for hero ──────────────────────────── */
+.noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* ── Active button tap feedback ──────────────────────────────── */
+button:active { transform: translateY(1px) scale(0.99); }
+
+/* ── Focus ring ──────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* ── Stat number counter font ────────────────────────────────── */
+.stat-number {
+  font-family: 'Geist Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Real-time risk update row flash ─────────────────────────── */
+@keyframes rowFlash {
+  0%   { background-color: rgba(245, 158, 11, 0.18); }
+  60%  { background-color: rgba(245, 158, 11, 0.10); }
+  100% { background-color: transparent; }
+}
+
+.row-flash {
+  animation: rowFlash 1.5s ease-out forwards;
+}

@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduGuard — 5-Slide Executive Pitch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F5F5F7;
+      --surface: #FFFFFF;
+      --surface-2: #F0F0F3;
+      --border: rgba(0, 0, 0, 0.08);
+      --border-strong: rgba(0, 0, 0, 0.14);
+      --text-primary: #1D1D1F;
+      --text-secondary: #6E6E73;
+      --text-tertiary: #8E8E93;
+      --accent: #0071E3;
+      --accent-light: #E8F1FB;
+      --danger: #FF3B30;
+      --danger-light: #FFF0EE;
+      --warning: #FF9500;
+      --warning-light: #FFF5E6;
+      --success: #34C759;
+      --success-light: #EDFAF1;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.08);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Presentation Screen Viewport */
+    .deck-container {
+      width: 100vw;
+      max-width: 1180px;
+      height: 90vh;
+      max-height: 700px;
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-strong);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin: 20px;
+    }
+
+    /* Top Progress Bar */
+    .deck-header {
+      padding: 18px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      z-index: 10;
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .shield-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .slide-indicator {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--surface-2);
+      padding: 4px 12px;
+      border-radius: 980px;
+    }
+
+    .slide-viewport {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Individual Slide */
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 44px 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(16px);
+      transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    /* Slide Typography */
+    .eyebrow {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .slide-title {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .slide-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      max-width: 820px;
+      margin-bottom: 28px;
+    }
+
+    /* Grids & Cards */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .card-grid-2 {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+    }
+
+    .slide-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .slide-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      background: #FFFFFF;
+    }
+
+    .card-icon {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Key Metric Highlight Chips */
+    .metric-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 980px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .chip-accent { color: var(--accent); background: var(--accent-light); border-color: transparent; }
+    .chip-danger { color: var(--danger); background: var(--danger-light); border-color: transparent; }
+    .chip-success { color: var(--success); background: var(--success-light); border-color: transparent; }
+
+    /* Bottom Navigation Bar */
+    .deck-footer {
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      z-index: 10;
+    }
+
+    .nav-btn {
+      padding: 8px 18px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-strong);
+      border-radius: 980px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: var(--text-primary);
+      color: white;
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .nav-btn.primary {
+      background: var(--accent);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
+    }
+
+    .dots-container {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border-strong);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .dot.active {
+      width: 24px;
+      border-radius: 12px;
+      background: var(--accent);
+    }
+
+    /* Print / PDF Mode */
+    @media print {
+      body { background: white; }
+      .deck-container {
+        width: 100%; height: auto; max-height: none; box-shadow: none; border: none; margin: 0;
+      }
+      .deck-header, .deck-footer { display: none; }
+      .slide {
+        position: relative; opacity: 1 !important; transform: none !important; page-break-after: always; min-height: 100vh;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="deck-container">
+    <!-- Header -->
+    <div class="deck-header">
+      <div class="brand-badge">
+        <div class="shield-icon">🛡️</div>
+        <span>EduGuard</span>
+      </div>
+      <div class="slide-indicator" id="slide-num">Slide 1 of 5</div>
+    </div>
+
+    <!-- Viewport -->
+    <div class="slide-viewport">
+
+      <!-- SLIDE 1: Title & Core Vision -->
+      <div class="slide active" id="slide-1">
+        <div class="eyebrow">Smart India Hackathon 2026 · AI in Education</div>
+        <h1 class="slide-title">Proactive Student Retention & Early-Warning AI System</h1>
+        <p class="slide-subtitle">
+          Every semester, thousands of students drop out silently due to undetected academic distress and socioeconomic pressures. EduGuard catches early risk patterns weeks in advance so educators can step in before it's too late.
+        </p>
+
+        <div class="card-grid">
+          <div class="slide-card">
+            <div class="card-icon">🚨</div>
+            <div class="card-title">The Silent Attrition Problem</div>
+            <div class="card-desc">Over 15–20% of first-generation college students drop out without warning due to isolated academic, mental, and financial friction.</div>
+          </div>
+          <div class="slide-card">
+            <div class="card-icon">⚡</div>
+            <div class="card-title">Weeks 2–6 Early Window</div>
+            <div class="card-desc">By predicting risk probability in the critical early weeks, institutions can turn potential dropouts into success stories through targeted interventions.</div>
+          </div>
+          <div class="slide-card">
+            <div class="card-icon">🎯</div>
+            <div class="card-title">92.4% Explainable AI</div>
+            <div class="card-desc">Voting ensemble model with SHAP explainability matrices that tell educators exactly <i>why</i> a student is at risk and <i>what</i> remedial steps to take.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 2: The Challenge (Why Current Approaches Fail) -->
+      <div class="slide" id="slide-2">
+        <div class="eyebrow">The Institutional Bottleneck</div>
+        <h1 class="slide-title">Why Traditional University Systems Miss At-Risk Students</h1>
+        <p class="slide-subtitle">
+          Universities have plenty of data, but it is trapped in silos. By the time a student misses midterm exams or stops attending, it's often too late to save their semester.
+        </p>
+
+        <div class="card-grid">
+          <div class="slide-card">
+            <div class="card-icon">⏳</div>
+            <div class="card-title">1. Purely Reactive Action</div>
+            <div class="card-desc">Institutions usually notice dropouts only when exam fees or next-semester registrations fail—long after the student has disengaged.</div>
+          </div>
+          <div class="slide-card">
+            <div class="card-icon">🗄️</div>
+            <div class="card-title">2. Disconnected Data Silos</div>
+            <div class="card-desc">Attendance registers, LMS login logs, library databases, and counselor notes never speak to each other in real-time.</div>
+          </div>
+          <div class="slide-card">
+            <div class="card-icon">🔒</div>
+            <div class="card-title">3. Black-Box Confusion</div>
+            <div class="card-desc">Generic alerts don't provide actionable context. Teachers need transparent, prescriptive guidance tailored to each student.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3: The AI Engine & Architecture -->
+      <div class="slide" id="slide-3">
+        <div class="eyebrow">Predictive Intelligence Architecture</div>
+        <h1 class="slide-title">How EduGuard Predicts & Explains Risk</h1>
+        <p class="slide-subtitle">
+          Our model evaluates 12 multi-dimensional feature vectors across academic, behavioral, and background metrics without bias.
+        </p>
+
+        <div class="card-grid-2">
+          <div class="slide-card" style="background: white;">
+            <div class="card-title" style="margin-bottom: 12px;">Multi-Dimensional Feature Vectors</div>
+            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+                <b>Academic Momentum</b> <span>GPA, Backlogs, Assignment Rate</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+                <b>Engagement & LMS</b> <span>Weekly Logins, Library Visits, Attendance</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+                <b>Background & Wellbeing</b> <span>Socioeconomic, Distance, Mental Health</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <b>ML Pipeline</b> <span>RandomForest + XGBoost Ensemble (10-Fold CV)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="slide-card" style="background: white;">
+            <div class="card-title" style="margin-bottom: 8px;">Counterfactual "What-If" Studio</div>
+            <div class="card-desc" style="margin-bottom: 14px;">
+              Teachers and mentors can simulate actionable recovery plans in real time:
+            </div>
+            <div style="background: var(--surface-2); padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; line-height: 1.5;">
+              <span style="color: var(--success); font-weight: 700;">Simulated Outcome:</span><br>
+              <i>"If this student's attendance increases by 15% and assignments are submitted on time, risk probability drops from <b>84% → 32% (Safe Standing)</b>."</i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: 3-Role Unified Ecosystem -->
+      <div class="slide" id="slide-4">
+        <div class="eyebrow">User Workflows & Operational Impact</div>
+        <h1 class="slide-title">Tailored Command Centers for Every Stakeholder</h1>
+        <p class="slide-subtitle">
+          Designed with Apple-grade UX simplicity to eliminate friction for faculty and empower students directly.
+        </p>
+
+        <div class="card-grid">
+          <div class="slide-card">
+            <div class="card-icon">🏛️</div>
+            <div class="card-title">1. Dean / Administrator</div>
+            <div class="card-desc">
+              • 7-week cohort risk telemetry<br>
+              • Live retraining terminal & epochs<br>
+              • Dynamic alert threshold calibration<br>
+              • Bulk CSV student batch ingestion
+            </div>
+          </div>
+          <div class="slide-card">
+            <div class="card-icon">👩‍🏫</div>
+            <div class="card-title">2. Faculty & Advisors</div>
+            <div class="card-desc">
+              • Multi-criteria filter matrix (Sem/Dept/Risk)<br>
+              • 1-click student radar profile sheet<br>
+              • Instant PDF evaluation briefs<br>
+              • One-touch intervention assignment
+            </div>
+          </div>
+          <div class="slide-card">
+            <div class="card-icon">🎓</div>
+            <div class="card-title">3. Student Hub</div>
+            <div class="card-desc">
+              • 5-D weekly wellbeing check-ins<br>
+              • Personalized academic goal tracker<br>
+              • Attendance & GPA streak meters<br>
+              • Allocated support program portal
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 5: Outcomes & Deployment Roadmap -->
+      <div class="slide" id="slide-5">
+        <div class="eyebrow">Feasibility, Security & SIH Roadmap</div>
+        <h1 class="slide-title">Real-World Impact & Production Readiness</h1>
+        <p class="slide-subtitle">
+          EduGuard is built from day one on scalable, production-grade cloud standards with zero latency bottlenecks.
+        </p>
+
+        <div class="card-grid">
+          <div class="slide-card">
+            <div class="card-icon">📈</div>
+            <div class="card-title">Measurable Outcomes</div>
+            <div class="card-desc">
+              • <b>35–40% Reduction</b> in preventable early dropouts.<br>
+              • <b>100% Transparency</b> with SHAP feature explainability.<br>
+              • <b>Zero Blindspots</b> with automated WebSocket alert feeds.
+            </div>
+          </div>
+          <div class="slide-card">
+            <div class="card-icon">🛡️</div>
+            <div class="card-title">Security & Compliance</div>
+            <div class="card-desc">
+              • Role-based JWT authentication.<br>
+              • Data anonymization on student exports.<br>
+              • Full compliance with FERPA/HEI data privacy standards.
+            </div>
+          </div>
+          <div class="slide-card">
+            <div class="card-icon">🚀</div>
+            <div class="card-title">Phase 2 Scalability</div>
+            <div class="card-desc">
+              • Direct Moodle & Canvas LMS LTI plugins.<br>
+              • Multi-campus tenant architecture.<br>
+              • Automated WhatsApp / SMS parent-mentor nudges.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer Controls -->
+    <div class="deck-footer">
+      <button class="nav-btn" id="prev-btn" onclick="prevSlide()" disabled>← Previous</button>
+      
+      <div class="dots-container" id="dots">
+        <div class="dot active" onclick="goToSlide(0)"></div>
+        <div class="dot" onclick="goToSlide(1)"></div>
+        <div class="dot" onclick="goToSlide(2)"></div>
+        <div class="dot" onclick="goToSlide(3)"></div>
+        <div class="dot" onclick="goToSlide(4)"></div>
+      </div>
+
+      <button class="nav-btn primary" id="next-btn" onclick="nextSlide()">Next Slide →</button>
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const totalSlides = 5;
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+    const slideNum = document.getElementById('slide-num');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    function updateDeck() {
+      slides.forEach((s, idx) => {
+        s.classList.toggle('active', idx === currentSlide);
+      });
+      dots.forEach((d, idx) => {
+        d.classList.toggle('active', idx === currentSlide);
+      });
+
+      slideNum.textContent = `Slide ${currentSlide + 1} of ${totalSlides}`;
+      prevBtn.disabled = currentSlide === 0;
+      
+      if (currentSlide === totalSlides - 1) {
+        nextBtn.textContent = 'Finish Presentation ✓';
+      } else {
+        nextBtn.textContent = 'Next Slide →';
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateDeck();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateDeck();
+      }
+    }
+
+    function goToSlide(idx) {
+      currentSlide = idx;
+      updateDeck();
+    }
+
+    // Keyboard Arrow Controls
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'Space') nextSlide();
+      if (e.key === 'ArrowLeft') prevSlide();
+    });
+  </script>
+</body>
+</html>

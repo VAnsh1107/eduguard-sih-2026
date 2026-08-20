@@ -1,0 +1,16 @@
+flask==3.0.3
+flask-cors==4.0.1
+scikit-learn==1.5.1
+xgboost==2.1.1
+shap==0.45.1
+pandas==2.2.2
+numpy==1.26.4
+joblib==1.4.2
+SQLAlchemy==2.0.32
+flask-jwt-extended==4.6.0
+APScheduler==3.10.4
+Flask-Mail==0.9.1
+python-dotenv==1.0.1
+reportlab==4.2.2
+flask-socketio==5.3.6
+eventlet==0.36.1

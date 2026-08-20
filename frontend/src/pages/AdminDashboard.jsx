@@ -360,59 +360,58 @@ export default function AdminDashboard() {
         style={{ padding: '24px 32px', maxWidth: '1200px', margin: '0 auto' }}
       >
         <style>{`
-          .stat-card-val { font-size: 32px; font-weight: 700; font-family: var(--font-mono); color: var(--ink); margin-top: auto; }
-          .stat-card-label { font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px; font-weight: 700; }
-          .stat-card-icon { width: 34px; height: 34px; border-radius: var(--radius-xs); border: 1.5px solid var(--ink); display: flex; align-items: center; justify-content: center; }
-          .card-header { font-size: 18px; font-family: var(--font-hand); font-weight: 700; color: var(--ink); margin: 0 0 16px 0; }
+          .stat-card-val { font-size: 32px; font-weight: 800; font-family: var(--font-sans); color: var(--text-primary); margin-top: auto; }
+          .stat-card-label { font-size: 11px; font-family: var(--font-sans); text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-tertiary); margin-bottom: 8px; font-weight: 700; }
+          .stat-card-icon { width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; }
+          .card-header { font-size: 18px; font-family: var(--font-sans); font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0; }
           
-          .radix-tab-list { display: flex; gap: 6px; border-bottom: 2px solid var(--ink); margin-bottom: 24px; padding-bottom: 2px; }
-          .radix-tab-trigger { height: 38px; padding: 0 14px; font-size: 12.5px; font-family: var(--font-mono); font-weight: 700; color: var(--text-secondary); background: transparent; border: 1.5px solid transparent; border-radius: var(--radius-xs); cursor: pointer; transition: all 0.15s ease; }
-          .radix-tab-trigger[data-state="active"] { color: var(--ink); background: var(--surface-2); border-color: var(--ink); box-shadow: 2px 2px 0px var(--ink); }
-          .radix-tab-trigger:hover:not([data-state="active"]) { color: var(--ink); background: var(--surface); }
+          .radix-tab-list { display: flex; gap: 6px; border-bottom: 1px solid var(--border); margin-bottom: 24px; padding-bottom: 4px; }
+          .radix-tab-trigger { height: 38px; padding: 0 16px; font-size: 13px; font-family: var(--font-sans); font-weight: 600; color: var(--text-secondary); background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease; }
+          .radix-tab-trigger[data-state="active"] { color: var(--accent); background: var(--accent-light); border-color: rgba(79, 70, 229, 0.2); font-weight: 700; }
+          .radix-tab-trigger:hover:not([data-state="active"]) { color: var(--text-primary); background: var(--surface-2); }
           
-          .custom-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); }
-          .custom-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--ink); font-weight: 700; }
-          .custom-table td { height: 50px; padding: 0 16px; font-size: 13px; color: var(--ink); border-bottom: 1px solid var(--border-subtle); }
+          .custom-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); }
+          .custom-table th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 700; }
+          .custom-table td { height: 52px; padding: 0 16px; font-size: 13.5px; color: var(--text-primary); border-bottom: 1px solid var(--border-subtle); }
           .custom-table tbody tr:hover { background-color: var(--surface-2); }
           .custom-table tbody tr:last-child td { border-bottom: none; }
           
-          .apple-switch[data-state="checked"] { background-color: var(--ink); }
-          .apple-switch { width: 44px; height: 24px; background-color: var(--surface-2); border-radius: 4px; position: relative; border: 1.5px solid var(--ink); cursor: pointer; transition: background-color 0.2s; outline: none; }
-          .apple-switch-thumb { display: block; width: 18px; height: 18px; background-color: var(--surface); border: 1px solid var(--ink); border-radius: 2px; transition: transform 0.2s; transform: translateX(1px); }
-          .apple-switch[data-state="checked"] .apple-switch-thumb { transform: translateX(21px); background-color: var(--accent-light); }
+          .apple-switch[data-state="checked"] { background-color: var(--accent); }
+          .apple-switch { width: 44px; height: 24px; background-color: var(--surface-2); border-radius: 9999px; position: relative; border: 1px solid var(--border); cursor: pointer; transition: background-color 0.2s; outline: none; }
+          .apple-switch-thumb { display: block; width: 18px; height: 18px; background-color: white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s; transform: translateX(2px); }
+          .apple-switch[data-state="checked"] .apple-switch-thumb { transform: translateX(22px); }
         `}</style>
 
         {/* Page Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            <div className="stamp-badge" style={{ borderColor: 'var(--ink)', color: 'var(--ink)', marginBottom: '4px' }}>
-              [ INSTITUTIONAL TELEMETRY CONTROL ]
+            <div className="stamp-badge" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)', marginBottom: '4px' }}>
+              CAMPUS TELEMETRY CONTROL
             </div>
-            <h1 style={{ fontSize: '38px', fontFamily: 'var(--font-hand)', fontWeight: 700, color: 'var(--ink)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1 style={{ fontSize: '30px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
               Campus Overview
               {socketConnected && (
-                <span className="stamp-badge" style={{ fontSize: '10px', borderColor: 'var(--success)', color: 'var(--success)', background: 'var(--success-light)' }}>
+                <span className="stamp-badge" style={{ fontSize: '11px', backgroundColor: 'var(--success-light)', color: 'var(--success)' }}>
                   ● LIVE WEBSOCKET STREAM
                 </span>
               )}
             </h1>
-            <p style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-              // Sync Status: Refreshed at {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
+              Sync Status: Refreshed at {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </p>
           </div>
           <button 
             onClick={handleRetrain}
             disabled={retraining}
             style={{
-              padding: '0 18px',
-              height: '42px',
-              borderRadius: 'var(--radius-xs)',
-              backgroundColor: 'var(--ink)',
-              border: '2px solid var(--ink)',
-              boxShadow: '3px 3px 0px var(--accent)',
-              color: 'var(--bg)',
-              fontSize: '13px',
-              fontFamily: 'var(--font-mono)',
+              padding: '0 20px',
+              height: '40px',
+              borderRadius: 'var(--radius-sm)',
+              background: 'linear-gradient(135deg, var(--accent) 0%, #3B82F6 100%)',
+              border: 'none',
+              boxShadow: '0 3px 10px rgba(79, 70, 229, 0.3)',
+              color: 'white',
+              fontSize: '13.5px',
               fontWeight: 700,
               cursor: retraining ? 'not-allowed' : 'pointer',
               display: 'flex',
@@ -429,41 +428,41 @@ export default function AdminDashboard() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '28px' }}>
           {loading ? Array.from({length: 4}).map((_,i) => <SkeletonCard key={i}/>) : (
             <>
-              <div style={{ backgroundColor: 'var(--surface)', border: '2px solid var(--ink)', boxShadow: '3px 3px 0px var(--ink)', borderRadius: 'var(--radius-sm)', padding: '20px', display: 'flex', flexDirection: 'column', height: '120px' }}>
+              <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)', borderRadius: 'var(--radius-lg)', padding: '20px', display: 'flex', flexDirection: 'column', height: '120px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div className="stat-card-label">[ TOTAL ENROLLED ]</div>
-                  <div className="stat-card-icon" style={{ backgroundColor: 'var(--surface-2)', color: 'var(--ink)' }}>
-                    <Users size={16} />
+                  <div className="stat-card-label">Total Enrolled</div>
+                  <div className="stat-card-icon" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}>
+                    <Users size={18} />
                   </div>
                 </div>
                 <div className="stat-card-val">{stats?.total_students?.toLocaleString() || 0}</div>
               </div>
 
-              <div style={{ backgroundColor: 'var(--surface)', border: '2px solid var(--ink)', boxShadow: '3px 3px 0px var(--danger)', borderRadius: 'var(--radius-sm)', padding: '20px', display: 'flex', flexDirection: 'column', height: '120px' }}>
+              <div style={{ backgroundColor: 'var(--surface)', border: '1px solid rgba(225, 29, 72, 0.15)', boxShadow: 'var(--shadow-card)', borderRadius: 'var(--radius-lg)', padding: '20px', display: 'flex', flexDirection: 'column', height: '120px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div className="stat-card-label">[ HIGH RISK FLAGGED ]</div>
-                  <div className="stat-card-icon" style={{ backgroundColor: 'var(--danger-light)', color: 'var(--danger)', borderColor: 'var(--danger)' }}>
-                    <AlertTriangle size={16} />
+                  <div className="stat-card-label">High Risk Flagged</div>
+                  <div className="stat-card-icon" style={{ backgroundColor: 'var(--danger-light)', color: 'var(--danger)' }}>
+                    <AlertTriangle size={18} />
                   </div>
                 </div>
                 <div className="stat-card-val" style={{ color: 'var(--danger)' }}>{stats?.risk_distribution?.High || 0}</div>
               </div>
 
-              <div style={{ backgroundColor: 'var(--surface)', border: '2px solid var(--ink)', boxShadow: '3px 3px 0px var(--success)', borderRadius: 'var(--radius-sm)', padding: '20px', display: 'flex', flexDirection: 'column', height: '120px' }}>
+              <div style={{ backgroundColor: 'var(--surface)', border: '1px solid rgba(5, 150, 105, 0.15)', boxShadow: 'var(--shadow-card)', borderRadius: 'var(--radius-lg)', padding: '20px', display: 'flex', flexDirection: 'column', height: '120px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div className="stat-card-label">[ ACTIVE SUPPORT ]</div>
-                  <div className="stat-card-icon" style={{ backgroundColor: 'var(--success-light)', color: 'var(--success)', borderColor: 'var(--success)' }}>
-                    <Activity size={16} />
+                  <div className="stat-card-label">Active Support</div>
+                  <div className="stat-card-icon" style={{ backgroundColor: 'var(--success-light)', color: 'var(--success)' }}>
+                    <Activity size={18} />
                   </div>
                 </div>
-                <div className="stat-card-val">{summaryLoading ? '...' : activeInterventions}</div>
+                <div className="stat-card-val" style={{ color: 'var(--success)' }}>{summaryLoading ? '...' : activeInterventions}</div>
               </div>
 
-              <div style={{ backgroundColor: 'var(--surface)', border: '2px solid var(--ink)', boxShadow: '3px 3px 0px var(--accent)', borderRadius: 'var(--radius-sm)', padding: '20px', display: 'flex', flexDirection: 'column', height: '120px' }}>
+              <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)', borderRadius: 'var(--radius-lg)', padding: '20px', display: 'flex', flexDirection: 'column', height: '120px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div className="stat-card-label">[ ENSEMBLE ACCURACY ]</div>
-                  <div className="stat-card-icon" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--ink)' }}>
-                    <Brain size={16} />
+                  <div className="stat-card-label">Ensemble Accuracy</div>
+                  <div className="stat-card-icon" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}>
+                    <Brain size={18} />
                   </div>
                 </div>
                 <div className="stat-card-val">{stats?.model_accuracy || '92.4'}%</div>
@@ -477,18 +476,18 @@ export default function AdminDashboard() {
           {/* LEFT COL */}
           <div>
             {/* Risk Distribution */}
-            <div id="admin-risk-section" style={{ backgroundColor: 'var(--surface)', border: '2px solid var(--ink)', boxShadow: '3px 3px 0px var(--ink)', borderRadius: 'var(--radius-sm)', padding: '24px' }}>
-              <div className="stamp-badge" style={{ borderColor: 'var(--ink)', color: 'var(--ink)', marginBottom: '4px' }}>
-                [ COHORT STRATIFICATION ]
+            <div id="admin-risk-section" style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)', borderRadius: 'var(--radius-lg)', padding: '24px' }}>
+              <div className="stamp-badge" style={{ backgroundColor: 'var(--surface-2)', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                COHORT STRATIFICATION
               </div>
-              <h2 className="card-header" style={{ fontSize: '26px', margin: '4px 0 16px' }}>Student Risk Distribution</h2>
+              <h2 className="card-header" style={{ fontSize: '20px', margin: '4px 0 16px' }}>Student Risk Distribution</h2>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <div className="stamp-badge" style={{ borderColor: 'var(--danger)', color: 'var(--danger)', background: 'var(--danger-light)' }}>High Risk</div>
-                <div className="stamp-badge" style={{ borderColor: 'var(--warning)', color: 'var(--warning)', background: 'var(--warning-light)' }}>Moderate Risk</div>
-                <div className="stamp-badge" style={{ borderColor: 'var(--success)', color: 'var(--success)', background: 'var(--success-light)' }}>Safe Standing</div>
+                <div className="stamp-badge" style={{ backgroundColor: 'var(--danger-light)', color: 'var(--danger)' }}>High Risk</div>
+                <div className="stamp-badge" style={{ backgroundColor: 'var(--warning-light)', color: 'var(--warning)' }}>Moderate Risk</div>
+                <div className="stamp-badge" style={{ backgroundColor: 'var(--success-light)', color: 'var(--success)' }}>Safe Standing</div>
               </div>
               <div style={{ height: '240px' }}>
-                {loading ? <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-mono)' }}>Loading...</div> : (
+                {loading ? <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div> : (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -497,16 +496,15 @@ export default function AdminDashboard() {
                         innerRadius={60} outerRadius={90}
                         paddingAngle={3}
                         dataKey="value"
-                        stroke="var(--ink)"
-                        strokeWidth={1.5}
+                        stroke="none"
                       >
                         {pieData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
                       <Tooltip 
-                        contentStyle={{ backgroundColor: 'var(--surface)', border: '2px solid var(--ink)', borderRadius: '4px', boxShadow: '3px 3px 0px var(--ink)', fontFamily: 'var(--font-mono)', color: 'var(--ink)' }}
-                        itemStyle={{ color: 'var(--ink)' }}
+                        contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', boxShadow: 'var(--shadow-md)', color: 'var(--text-primary)' }}
+                        itemStyle={{ color: 'var(--text-primary)' }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -515,11 +513,11 @@ export default function AdminDashboard() {
             </div>
 
             {/* Department Table */}
-            <div style={{ backgroundColor: 'var(--surface)', border: '2px solid var(--ink)', boxShadow: '3px 3px 0px var(--ink)', borderRadius: 'var(--radius-sm)', padding: '24px', marginTop: '24px' }}>
-              <div className="stamp-badge" style={{ borderColor: 'var(--ink)', color: 'var(--ink)', marginBottom: '4px' }}>
-                [ DEPARTMENTAL TELEMETRY ]
+            <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)', borderRadius: 'var(--radius-lg)', padding: '24px', marginTop: '24px' }}>
+              <div className="stamp-badge" style={{ backgroundColor: 'var(--surface-2)', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                DEPARTMENTAL TELEMETRY
               </div>
-              <h2 className="card-header" style={{ fontSize: '26px', margin: '4px 0 16px' }}>Department Risk Breakdown</h2>
+              <h2 className="card-header" style={{ fontSize: '20px', margin: '4px 0 16px' }}>Department Risk Breakdown</h2>
               <div style={{ overflowX: 'auto' }}>
                 <table className="custom-table">
                   <thead>
@@ -538,7 +536,7 @@ export default function AdminDashboard() {
                     ) : (
                       stats?.department_stats?.map((dept, i) => (
                         <tr key={i}>
-                          <td style={{ fontWeight: 700 }}>{dept.department}</td>
+                          <td style={{ fontWeight: 600 }}>{dept.department}</td>
                           <td>{dept.total}</td>
                           <td>
                             <span style={{ 
@@ -565,11 +563,11 @@ export default function AdminDashboard() {
           {/* RIGHT COL */}
           <div>
             {/* Recent High Risk */}
-            <div style={{ backgroundColor: 'var(--surface)', border: '2px solid var(--ink)', boxShadow: '3px 3px 0px var(--ink)', borderRadius: 'var(--radius-sm)', padding: '20px' }}>
-              <div className="stamp-badge" style={{ borderColor: 'var(--danger)', color: 'var(--danger)', background: 'var(--danger-light)', marginBottom: '4px' }}>
-                [ PRIORITY CASES ]
+            <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)', borderRadius: 'var(--radius-lg)', padding: '24px' }}>
+              <div className="stamp-badge" style={{ backgroundColor: 'var(--danger-light)', color: 'var(--danger)', marginBottom: '4px' }}>
+                PRIORITY CASES
               </div>
-              <h2 className="card-header" style={{ fontSize: '24px', margin: '4px 0 16px' }}>Recent High-Risk Flags</h2>
+              <h2 className="card-header" style={{ fontSize: '20px', margin: '4px 0 16px' }}>Recent High-Risk Flags</h2>
               
               <div style={{ marginTop: '16px' }}>
                 {recentHighRiskLoading ? (

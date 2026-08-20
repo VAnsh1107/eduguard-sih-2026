@@ -11,9 +11,11 @@ function AvatarLarge({ name }) {
   const initials = name ? name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : '?'
   return (
     <div style={{
-      width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--accent-light)',
-      color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: 22, fontWeight: 700, flexShrink: 0
+      width: 54, height: 54, borderRadius: 'var(--radius-xs)',
+      border: '2px solid var(--ink)',
+      backgroundColor: 'var(--surface-2)',
+      color: 'var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: 'var(--font-mono)', fontSize: 20, fontWeight: 700, flexShrink: 0
     }}>
       {initials}
     </div>
@@ -22,19 +24,18 @@ function AvatarLarge({ name }) {
 
 function RiskBadge({ level }) {
   let bg = 'var(--surface-2)'
-  let color = 'var(--text-secondary)'
+  let color = 'var(--ink)'
   const norm = (level || '').toLowerCase()
   if (norm === 'high') { bg = 'var(--danger-light)'; color = 'var(--danger)' }
   else if (norm === 'medium') { bg = 'var(--warning-light)'; color = 'var(--warning)' }
   else if (norm === 'low') { bg = 'var(--success-light)'; color = 'var(--success)' }
 
   return (
-    <div style={{
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      padding: '6px 14px', borderRadius: '980px',
-      backgroundColor: bg, color: color, fontSize: '13px', fontWeight: 600,
+    <div className="stamp-badge" style={{
+      backgroundColor: bg, color: color, borderColor: color,
+      fontSize: '12px', fontWeight: 700, padding: '3px 12px'
     }}>
-      {level || 'Unknown'} Risk
+      [ {level || 'UNKNOWN'} RISK PROFILE ]
     </div>
   )
 }
@@ -48,7 +49,7 @@ function RiskGaugeComponent({ probability, riskLevel, probabilities }) {
   else if (norm === 'low') color = 'var(--success)'
 
   const strokeWidth = 12
-  const radius = 54
+  const radius = 50
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (Math.min(prob, 100) / 100) * circumference
 
@@ -56,22 +57,22 @@ function RiskGaugeComponent({ probability, riskLevel, probabilities }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
       <div style={{ position: 'relative', width: 110, height: 110 }}>
         <svg width="110" height="110" viewBox="0 0 120 120" style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx="60" cy="60" r={radius} stroke="var(--surface-2)" strokeWidth={strokeWidth} fill="none" />
+          <circle cx="60" cy="60" r={radius} stroke="var(--border-subtle)" strokeWidth={strokeWidth} fill="none" />
           <circle
             cx="60" cy="60" r={radius} stroke={color} strokeWidth={strokeWidth} fill="none"
-            strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round"
+            strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="square"
             style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)' }}
           />
         </svg>
       </div>
       <div>
-        <div style={{ fontSize: '36px', fontWeight: 700, color, lineHeight: 1 }}>{Math.round(prob)}%</div>
-        <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px', fontWeight: 500 }}>
-          {riskLevel ? `${riskLevel} Risk Confidence` : 'Prediction Confidence'}
+        <div style={{ fontSize: '38px', fontFamily: 'var(--font-mono)', fontWeight: 700, color, lineHeight: 1 }}>{Math.round(prob)}%</div>
+        <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: 600 }}>
+          {riskLevel ? `[ ${riskLevel.toUpperCase()} RISK CONFIDENCE ]` : '[ PREDICTION CONFIDENCE ]'}
         </div>
         {probabilities && (
           <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-            <span style={{ fontSize: '11px', color: 'var(--text-tertiary)' }}>
+            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)' }}>
               High: {Math.round(probabilities.High || 0)}% · Med: {Math.round(probabilities.Medium || 0)}% · Low: {Math.round(probabilities.Low || 0)}%
             </span>
           </div>

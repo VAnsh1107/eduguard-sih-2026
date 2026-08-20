@@ -233,14 +233,15 @@ export default function TeacherDashboard() {
     width: '100%',
     height: '44px',
     backgroundColor: 'var(--surface)',
-    border: '0.5px solid var(--border-strong)',
-    borderRadius: 'var(--radius-md)',
+    border: '2px solid var(--ink)',
+    borderRadius: 'var(--radius-xs)',
     padding: '0 16px',
     paddingLeft: '40px',
-    fontSize: '15px',
-    color: 'var(--text-primary)',
+    fontSize: '14px',
+    fontFamily: 'var(--font-mono)',
+    color: 'var(--ink)',
     outline: 'none',
-    boxShadow: 'var(--shadow-sm)'
+    boxShadow: '3px 3px 0px var(--ink)'
   }
 
   const filterRowStyle = {
@@ -252,54 +253,71 @@ export default function TeacherDashboard() {
   }
 
   const selectTriggerStyle = {
-    height: '36px',
+    height: '38px',
     backgroundColor: 'var(--surface)',
-    border: '0.5px solid var(--border-strong)',
-    borderRadius: 'var(--radius-sm)',
+    border: '1.5px solid var(--ink)',
+    borderRadius: 'var(--radius-xs)',
+    boxShadow: '2px 2px 0px var(--ink)',
     padding: '0 12px',
-    fontSize: '13px',
-    fontWeight: 500,
-    color: 'var(--text-primary)',
+    fontSize: '12.5px',
+    fontFamily: 'var(--font-mono)',
+    fontWeight: 600,
+    color: 'var(--ink)',
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'space-between',
     gap: '8px',
     cursor: 'pointer',
-    outline: 'none',
-    boxShadow: 'var(--shadow-sm)'
+    outline: 'none'
   }
 
   const selectContentStyle = {
     backgroundColor: 'var(--surface)',
-    border: `0.5px solid var(--border)`,
-    boxShadow: 'var(--shadow-md)',
-    borderRadius: 'var(--radius-md)',
+    border: '2px solid var(--ink)',
+    borderRadius: 'var(--radius-xs)',
+    boxShadow: '4px 4px 0px var(--ink)',
     padding: '4px',
-    zIndex: 9999,
+    zIndex: 100,
+    fontFamily: 'var(--font-mono)'
   }
 
   const selectItemStyle = {
-    padding: '8px 12px',
-    fontSize: '13px',
-    color: 'var(--text-primary)',
+    height: '32px',
+    padding: '0 10px',
+    fontSize: '12.5px',
+    fontFamily: 'var(--font-mono)',
+    color: 'var(--ink)',
+    display: 'flex',
+    alignItems: 'center',
+    borderRadius: '2px',
     cursor: 'pointer',
-    borderRadius: 'var(--radius-sm)',
-    outline: 'none',
+    outline: 'none'
   }
 
   const buttonStyle = {
-    height: '36px',
+    height: '38px',
     padding: '0 16px',
-    backgroundColor: 'var(--surface)',
-    border: '0.5px solid var(--border-strong)',
-    borderRadius: 'var(--radius-sm)',
-    color: 'var(--text-primary)',
+    backgroundColor: 'var(--ink)',
+    border: '2px solid var(--ink)',
+    borderRadius: 'var(--radius-xs)',
+    boxShadow: '2px 2px 0px var(--accent)',
+    color: 'var(--bg)',
     fontSize: '13px',
-    fontWeight: 600,
+    fontFamily: 'var(--font-mono)',
+    fontWeight: 700,
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    cursor: 'pointer',
-    boxShadow: 'var(--shadow-sm)'
+    gap: '6px',
+    cursor: 'pointer'
+  }
+
+  const tableCardStyle = {
+    backgroundColor: 'var(--surface)',
+    border: '2px solid var(--ink)',
+    borderRadius: 'var(--radius-sm)',
+    boxShadow: '4px 4px 0px var(--ink)',
+    overflow: 'hidden',
+    marginTop: '16px'
   }
 
   const totalPages = Math.max(1, Math.ceil(totalStudents / limit))

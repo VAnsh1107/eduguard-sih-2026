@@ -39,12 +39,10 @@ function Sparkline({ data }) {
   }
   const chartData = data.map((v, i) => ({ val: typeof v === 'object' ? (v.risk_probability || 0) : v, index: i }))
   return (
-    <div style={{ width: 60, height: 24 }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData}>
-          <Line type="monotone" dataKey="val" stroke="var(--accent)" strokeWidth={2} dot={false} isAnimationActive={false} />
-        </LineChart>
-      </ResponsiveContainer>
+    <div style={{ width: 60, height: 24, display: 'flex', alignItems: 'center' }}>
+      <LineChart width={60} height={24} data={chartData}>
+        <Line type="monotone" dataKey="val" stroke="var(--accent)" strokeWidth={2} dot={false} isAnimationActive={false} />
+      </LineChart>
     </div>
   )
 }

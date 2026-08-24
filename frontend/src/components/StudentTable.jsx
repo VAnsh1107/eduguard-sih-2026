@@ -4,24 +4,24 @@ import { LineChart, Line, ResponsiveContainer } from 'recharts'
 import RiskBadge from './RiskBadge'
 
 function Sparkline({ data, risk }) {
-  const chartData = data.map((val, idx) => ({ id: idx, value: val }))
+  if (!data || data.length === 0) return <div style={{ width: 56, height: 24 }} />
+  const chartData = data.map((val, idx) => ({ id: idx, value: typeof val === 'object' ? (val.risk_probability || 0) : val }))
   const strokeColor =
     risk === 'High' ? '#f43f5e' :
     risk === 'Medium' ? '#f59e0b' : '#10b981'
 
   return (
     <div className="w-14 h-6 opacity-80" onClick={e => e.stopPropagation()}>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData}>
-          <Line
-            type="monotone"
-            dataKey="value"
-            stroke={strokeColor}
-            strokeWidth={1.5}
-            dot={false}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <LineChart width={56} height={24} data={chartData}>
+        <Line
+          type="monotone"
+          dataKey="value"
+          stroke={strokeColor}
+          strokeWidth={1.5}
+          dot={false}
+          isAnimationActive={false}
+        />
+      </LineChart>
     </div>
   )
 }

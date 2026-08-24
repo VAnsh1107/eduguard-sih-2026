@@ -197,11 +197,27 @@ export default function AdminDashboard() {
     }).catch(() => setRecentHighRiskLoading(false))
   }
 
+  const formatTrendWeekLabel = (str, idx) => {
+    if (!str) return `W${idx + 1}`
+    const raw = String(str)
+    const cleaned = raw.includes('T') ? raw : `${raw}T00:00:00`
+    const d = new Date(cleaned)
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    }
+    const dDirect = new Date(raw)
+    if (!isNaN(dDirect.getTime())) {
+      return dDirect.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    }
+    return raw || `W${idx + 1}`
+  }
+
   const fetchTrendData = () => {
     axios.get('/api/analytics/trend', { params: { weeks: 7 } }).then(r => {
-      setTrendData((r.data.data || []).map(row => ({
+      const list = r.data.data || []
+      setTrendData(list.map((row, idx) => ({
         ...row,
-        week_label: new Date(`${row.week_start}T00:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        week_label: formatTrendWeekLabel(row.week_start, idx)
       })))
     }).catch(console.error)
   }
@@ -672,10 +688,10 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div style={{ height: '320px', width: '100%' }}>
-                  {trendData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={trendData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                <div style={{ height: '320px', width: '100%', minHeight: '320px' }}>
+                  {trendData && trendData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%" minHeight={320}>
+                      <LineChart data={trendData} margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                         <XAxis dataKey="week_label" tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} axisLine={{ stroke: 'var(--border)' }} tickLine={false} />
                         <YAxis tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} axisLine={false} tickLine={false} domain={[0, 'auto']} tickFormatter={(v) => Number(v).toLocaleString()} />

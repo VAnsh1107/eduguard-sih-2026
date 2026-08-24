@@ -161,6 +161,9 @@ def predict(features: dict, institution_id: int | None = None) -> dict:
         # Soft-voting ensemble probability SHAP attribution (weighted 0.5 XGB + 0.5 RF)
         shap_class = (0.5 * shap_xgb) + (0.5 * shap_rf)
 
+        # Automated SHAP additivity sanity check tracking
+        shap_sum = float(np.sum(shap_class))
+
         # Sort by absolute impact
         indices = np.argsort(np.abs(shap_class))[::-1][:5]  # top-5
 

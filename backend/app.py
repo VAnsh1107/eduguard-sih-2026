@@ -675,6 +675,8 @@ def get_students():
 
     with get_db() as db:
         query = db.query(Student)
+        if current_user["role"] != "super_admin" and current_user.get("institution_id"):
+            query = query.filter(Student.institution_id == current_user["institution_id"])
 
         if dept and dept != "All":
             query = query.filter(Student.department == dept)
@@ -1066,7 +1068,11 @@ def get_stats():
         return jsonify({"error": "Unauthorized. Requires admin or teacher role."}), 403
 
     with get_db() as db:
-        total = db.query(Student).count()
+        base_query = db.query(Student)
+        if current_user["role"] != "super_admin" and current_user.get("institution_id"):
+            base_query = base_query.filter(Student.institution_id == current_user["institution_id"])
+
+        total = base_query.count()
         if total == 0:
             return jsonify({
                 "total_students": 0,
@@ -1080,15 +1086,15 @@ def get_stats():
                 "semester_stats": []
             })
 
-        low = db.query(Student).filter(Student.risk_label == "Low").count()
-        medium = db.query(Student).filter(Student.risk_label == "Medium").count()
-        high = db.query(Student).filter(Student.risk_label == "High").count()
+        low = base_query.filter(Student.risk_label == "Low").count()
+        medium = base_query.filter(Student.risk_label == "Medium").count()
+        high = base_query.filter(Student.risk_label == "High").count()
 
-        avg_gpa = db.query(func.avg(Student.gpa)).scalar() or 0.0
-        avg_att = db.query(func.avg(Student.attendance_rate)).scalar() or 0.0
+        avg_gpa = base_query.with_entities(func.avg(Student.gpa)).scalar() or 0.0
+        avg_att = base_query.with_entities(func.avg(Student.attendance_rate)).scalar() or 0.0
 
         # Department stats group-by query
-        dept_query = db.query(
+        dept_query = base_query.with_entities(
             Student.department,
             func.count(Student.id).label("total"),
             func.sum(case((Student.risk_label == "Low", 1), else_=0)).label("low"),
@@ -1650,6 +1656,9 @@ def export_students():
 
     with get_db() as db:
         query = db.query(Student)
+        if current_user["role"] != "super_admin" and current_user.get("institution_id"):
+            query = query.filter(Student.institution_id == current_user["institution_id"])
+
         if department and department != "All":
             query = query.filter(Student.department == department)
         if risk and risk != "All":

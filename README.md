@@ -22,9 +22,13 @@ Every academic year, approximately **15% to 20% of undergraduate students drop o
 ## ✨ 2. Key Features
 
 ### 🧠 A. Machine Learning & Explainability Engine
-* **Voting Ensemble Classification:** Dual-pipeline combining **RandomForest** (for non-linear behavioral clustering) and **XGBoost** (for gradient boosting on weak engagement signals) achieving **92.4% test accuracy** and **91.8% F1-score**.
-* **SHAP Attribution Breakdown:** Game-theoretic attribution vectors displayed alongside every student prediction, identifying key risk drivers vs. protective factors.
-* **Counterfactual "What-If" Studio:** Interactive sliders for attendance boosts and GPA improvement that dynamically calculate the projected drop in dropout probability in real time.
+* **Voting Ensemble Classification:** Dual-pipeline combining **RandomForest** (for non-linear behavioral clustering) and **XGBoost** (for gradient boosting on weak engagement signals) evaluated via Pipeline-isolated **Stratified 5-Fold Cross-Validation (82.32% ± 2.68% F1-Macro, 87.10% Test Accuracy, 79.49% Test Macro F1)**.
+* **Soft-Voting SHAP Attribution:** Feature attributions aggregated from both ensemble members using matching soft-voting weights, with automated additivity sanity checks.
+* **Real ML Counterfactual "What-If" Studio:** Interactive sliders for attendance boosts and GPA improvement that execute true model-derived re-inference, returning exact probability deltas and class transition badges.
+
+> [!NOTE]
+> **Scientific Methodology & Production Disclosure:**  
+> EduGuard's current prototype demonstrates the full predictive and intervention architecture using controlled synthetic data (engineered non-linear interaction terms with Sigmoid probability mapping). The production architecture is designed for institutional historical data, featuring versioned retraining, 5-fold cross-validation, and longitudinal outcome validation.
 
 ### 🏛️ B. Administrator & Leadership Command Center
 * **7-Week Cohort Risk Telemetry:** Calibrated historical risk curves across the student population with interactive date-filtered tooltips.

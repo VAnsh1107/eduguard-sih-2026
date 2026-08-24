@@ -145,12 +145,17 @@ def train(data_source=None, institution_id: int | None = None) -> str:
     print("\n[TRAIN] Fitting XGBoost + RandomForest ensemble...")
     model.fit(X_train, y_train)
 
-    # 5. Evaluate with Stratified 5-Fold Cross-Validation and Detailed Metrics
+    # 5. Evaluate with Stratified 5-Fold Cross-Validation (Pipeline-isolated scaling per fold)
+    from sklearn.pipeline import Pipeline
     from sklearn.model_selection import StratifiedKFold, cross_val_score
     from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
 
+    cv_pipeline = Pipeline([
+        ("scaler", StandardScaler()),
+        ("ensemble", build_ensemble())
+    ])
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    cv_scores = cross_val_score(model, X_train, y_train, cv=skf, scoring="f1_macro")
+    cv_scores = cross_val_score(cv_pipeline, X_train_raw, y_train, cv=skf, scoring="f1_macro")
     cv_mean = float(np.mean(cv_scores))
     cv_std  = float(np.std(cv_scores))
 

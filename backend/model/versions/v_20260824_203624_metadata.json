@@ -1,0 +1,58 @@
+{
+  "training_date": "2026-08-24 20:36:24",
+  "institution_id": null,
+  "n_samples": 5000,
+  "accuracy": 0.871,
+  "macro_f1": 0.7949,
+  "weighted_f1": 0.868,
+  "cv_f1_macro_mean": 0.8232,
+  "cv_f1_macro_std": 0.0268,
+  "per_class_metrics": {
+    "Low": {
+      "precision": 0.8722,
+      "recall": 0.8452,
+      "f1_score": 0.8585
+    },
+    "Medium": {
+      "precision": 0.876,
+      "recall": 0.9202,
+      "f1_score": 0.8975
+    },
+    "High": {
+      "precision": 0.7857,
+      "recall": 0.5238,
+      "f1_score": 0.6286
+    }
+  },
+  "confusion_matrix": [
+    [
+      273,
+      50,
+      0
+    ],
+    [
+      40,
+      565,
+      9
+    ],
+    [
+      0,
+      30,
+      33
+    ]
+  ],
+  "feature_importances": {
+    "attendance_rate": 0.25638966609899677,
+    "gpa": 0.15054749142752838,
+    "assignment_submission_rate": 0.1554822519215672,
+    "lms_login_frequency": 0.04100641064903485,
+    "library_visits": 0.04536746641425529,
+    "socioeconomic_score": 0.07746737626994735,
+    "scholarship_recipient": 0.0670282286922261,
+    "family_income_bracket": 0.02951108251551135,
+    "previous_backlogs": 0.04181448799913044,
+    "distance_from_college": 0.03729410986174003,
+    "extracurricular_participation": 0.03458463730866489,
+    "mental_health_score": 0.06350682064371971
+  }
+}

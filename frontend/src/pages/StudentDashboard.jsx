@@ -170,6 +170,7 @@ export default function StudentDashboard() {
   }
 
   const s = detail || {}
+  const f = s.features || s || {}
   const pred = s.prediction || {}
   const confidence = pred.risk_probability ?? pred.confidence ?? s.risk_probability ?? null
   const riskLevel = confidence !== null
@@ -189,12 +190,12 @@ export default function StudentDashboard() {
   }
 
   const radarData = [
-    { subject: 'GPA', A: calcRadarScore(s.gpa, 10), raw: s.gpa != null ? Number(s.gpa).toFixed(2) : 'N/A' },
-    { subject: 'Attendance', A: calcRadarScore(s.attendance_rate, 1, true), raw: `${calcRadarScore(s.attendance_rate, 1, true)}%` },
-    { subject: 'Assignments', A: calcRadarScore(s.assignment_submission_rate, 1, true), raw: `${calcRadarScore(s.assignment_submission_rate, 1, true)}%` },
-    { subject: 'LMS Activity', A: calcRadarScore(s.lms_login_frequency ?? s.lms_logins_week, 20), raw: `${s.lms_login_frequency ?? s.lms_logins_week ?? 0}/wk` },
-    { subject: 'Wellbeing', A: calcRadarScore(s.mental_health_score ?? s.mental_wellbeing_score, 10), raw: `${s.mental_health_score ?? s.mental_wellbeing_score ?? 0}/10` },
-    { subject: 'Engagement', A: calcRadarScore(s.extracurricular_participation ?? s.extracurricular, 1), raw: s.extracurricular_participation ? 'Active' : 'Basic' },
+    { subject: 'GPA', A: calcRadarScore(f.gpa, 10), raw: f.gpa != null ? Number(f.gpa).toFixed(2) : 'N/A' },
+    { subject: 'Attendance', A: calcRadarScore(f.attendance_rate, 1, true), raw: `${calcRadarScore(f.attendance_rate, 1, true)}%` },
+    { subject: 'Assignments', A: calcRadarScore(f.assignment_submission_rate, 1, true), raw: `${calcRadarScore(f.assignment_submission_rate, 1, true)}%` },
+    { subject: 'LMS Activity', A: calcRadarScore(f.lms_login_frequency ?? f.lms_logins_week, 20), raw: `${f.lms_login_frequency ?? f.lms_logins_week ?? 0}/wk` },
+    { subject: 'Wellbeing', A: calcRadarScore(f.mental_health_score ?? f.mental_wellbeing_score, 10), raw: `${f.mental_health_score ?? f.mental_wellbeing_score ?? 0}/10` },
+    { subject: 'Engagement', A: calcRadarScore(f.extracurricular_participation ?? f.extracurricular, 1), raw: f.extracurricular_participation ? 'Active' : 'Basic' },
   ]
 
   const riskColor = riskLevel === 'High' ? 'var(--danger)' : riskLevel === 'Medium' ? 'var(--warning)' : 'var(--success)'
@@ -365,7 +366,7 @@ export default function StudentDashboard() {
                   <PolarGrid stroke="var(--border)" strokeDasharray="3 3" />
                   <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 600 }} />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                  <Radar name="Student Profile" dataKey="A" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.25} strokeWidth={2} />
+                  <Radar name="Student Profile" dataKey="A" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.25} strokeWidth={2} isAnimationActive={false} />
                   <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '0.5px solid var(--border)', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-md)', color: 'var(--text-primary)' }} />
                 </RadarChart>
               </ResponsiveContainer>

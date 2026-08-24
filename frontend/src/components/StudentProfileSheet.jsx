@@ -165,14 +165,23 @@ export default function StudentProfileSheet({ student, open, onClose }) {
   const currentRiskProb = pred.confidence ?? student.risk_probability ?? student.dropout_risk ?? 0
   const currentRiskLevel = pred.risk_level ?? student.risk_label ?? 'Medium'
 
-  // Normalization for Radar (0-100 scale)
+  const calcRadarScore = (val, maxVal = 1, isPct = false) => {
+    if (val == null) return 0
+    const num = Number(val)
+    if (isNaN(num)) return 0
+    if (isPct) {
+      return num > 1 ? Math.min(100, Math.round(num)) : Math.min(100, Math.round(num * 100))
+    }
+    return Math.min(100, Math.round((num / maxVal) * 100))
+  }
+
   const radarData = [
-    { subject: 'GPA', A: Math.min(((f.gpa || 0) / 10) * 100, 100) },
-    { subject: 'Attendance', A: Math.min((f.attendance_rate || 0) * 100, 100) },
-    { subject: 'Assignments', A: Math.min((f.assignment_submission_rate || 0) * 100, 100) },
-    { subject: 'LMS Activity', A: Math.min(((f.lms_login_frequency || f.lms_logins_week || 0) / 15) * 100, 100) },
-    { subject: 'Wellbeing', A: Math.min(((f.mental_health_score || f.mental_wellbeing_score || 0) / 10) * 100, 100) },
-    { subject: 'Social', A: Math.min(((f.socioeconomic_score || 5) / 10) * 100, 100) }
+    { subject: 'GPA', A: calcRadarScore(f.gpa, 10) },
+    { subject: 'Attendance', A: calcRadarScore(f.attendance_rate, 1, true) },
+    { subject: 'Assignments', A: calcRadarScore(f.assignment_submission_rate, 1, true) },
+    { subject: 'LMS Activity', A: calcRadarScore(f.lms_login_frequency ?? f.lms_logins_week, 20) },
+    { subject: 'Wellbeing', A: calcRadarScore(f.mental_health_score ?? f.mental_wellbeing_score, 10) },
+    { subject: 'Social', A: calcRadarScore(f.socioeconomic_score, 10) }
   ]
 
   const topFactors = pred.top_factors || []
@@ -291,7 +300,7 @@ export default function StudentProfileSheet({ student, open, onClose }) {
                               <PolarGrid stroke="var(--border)" />
                               <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} />
                               <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                              <Radar name="Student" dataKey="A" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.2} />
+                              <Radar name="Student" dataKey="A" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.2} isAnimationActive={false} />
                             </RadarChart>
                           </ResponsiveContainer>
                         </div>

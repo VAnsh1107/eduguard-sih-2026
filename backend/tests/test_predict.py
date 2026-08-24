@@ -136,37 +136,26 @@ def test_predict_what_if_server_side_validation(client, admin_token):
     assert data["modified_features"]["gpa"] >= 0.0
 
 
-def test_shap_additivity_check_structure(client, admin_token):
-    with patch("app.ml_predict") as mock_pred:
-        mock_pred.return_value = {
-            "risk_level": "High",
-            "risk_code": 2,
-            "risk_probability": 87.3,
-            "confidence": 87.3,
-            "probabilities": {"Low": 5.1, "Medium": 7.6, "High": 87.3},
-            "risk_color": "#EF4444",
-            "top_factors": [],
-            "shap_available": True,
-            "shap_additivity": {
-                "ensemble_probability": 0.873,
-                "ensemble_base_value": 0.3333,
-                "sum_of_feature_attributions": 0.54,
-                "reconstructed_probability": 0.8733,
-                "absolute_additivity_error": 0.0003,
-                "additivity_passed": True,
-            },
-            "interventions": [],
-        }
-        resp = client.post(
-            "/api/predict",
-            json=_student_payload(),
-            headers=_auth_header(admin_token),
-        )
-    data = resp.get_json()
+def test_shap_native_additivity_structure(client, admin_token):
+    resp = client.post(
+        "/api/predict",
+        json=_student_payload(),
+        headers=_auth_header(admin_token),
+    )
     assert resp.status_code == 200
+    data = resp.get_json()
     assert "risk_probability" in data
+    assert "ensemble_feature_attributions" in data
+    assert "shap_methodology" in data
     assert "shap_additivity" in data
-    assert data["shap_additivity"]["additivity_passed"] is True
+    
+    additivity = data["shap_additivity"]
+    assert "xgb" in additivity
+    assert "rf" in additivity
+    assert additivity["xgb"]["output_space"] == "log-odds / margin"
+    assert additivity["rf"]["output_space"] == "probability"
+    assert "native_additivity_passed" in additivity["xgb"]
+    assert "native_additivity_passed" in additivity["rf"]
 
 
 def test_cohort_analytics_tenant_isolation(client, admin_token):

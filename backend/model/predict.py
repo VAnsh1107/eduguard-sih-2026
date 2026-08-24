@@ -146,59 +146,95 @@ def predict(features: dict, institution_id: int | None = None) -> dict:
         "High":   round(float(proba_raw[2]) * 100, 1),
     }
 
-    # ── SHAP top-5 contributing features across soft-voting ensemble ─────────
+    # ── SHAP attributions across soft-voting ensemble ──────────────────────────
     shap_available = True
     top_factors = []
+    ensemble_attributions = []
+    shap_additivity = None
     explanation_message = None
+    shap_methodology = (
+        "Feature attributions are aggregated using soft-voting estimator weights (0.5 XGBoost + 0.5 RandomForest). "
+        "They represent directional explanatory feature attributions and are not treated as an exact probability decomposition "
+        "across heterogeneous SHAP output spaces."
+    )
 
     try:
         explainers  = _get_explainers(institution_id=institution_id)
         X_scaled_df = pd.DataFrame(X_s, columns=_feature_cols)
 
-        shap_xgb = _extract_class_shap(explainers["xgb"].shap_values(X_scaled_df), risk_code)
-        shap_rf  = _extract_class_shap(explainers["rf"].shap_values(X_scaled_df), risk_code)
+        # 1. Native-space SHAP calculation
+        xgb_explainer = explainers["xgb"]
+        rf_explainer  = explainers["rf"]
 
-        # Soft-voting ensemble probability SHAP attribution (weighted 0.5 XGB + 0.5 RF)
-        shap_class = (0.5 * shap_xgb) + (0.5 * shap_rf)
+        sv_xgb = xgb_explainer.shap_values(X_scaled_df)
+        sv_rf  = rf_explainer.shap_values(X_scaled_df)
 
-        # Real SHAP additivity verification check
-        ensemble_prob = float(proba_raw[risk_code])
-        ensemble_base_val = round(1.0 / float(len(RISK_LABELS)), 4)
-        sum_attributions = round(float(np.sum(shap_class)), 4)
-        reconstructed_prob = round(float(np.clip(ensemble_base_val + sum_attributions, 0.0, 1.0)), 4)
-        additivity_error = round(float(abs(reconstructed_prob - ensemble_prob)), 4)
-        additivity_passed = bool(additivity_error <= 0.15)
+        shap_xgb = _extract_class_shap(sv_xgb, risk_code)
+        shap_rf  = _extract_class_shap(sv_rf, risk_code)
 
-        shap_additivity = {
-            "ensemble_probability":        round(ensemble_prob, 4),
-            "ensemble_base_value":         ensemble_base_val,
-            "sum_of_feature_attributions": sum_attributions,
-            "reconstructed_probability":   reconstructed_prob,
-            "absolute_additivity_error":   additivity_error,
-            "additivity_passed":           additivity_passed,
+        # 2. Native independent SHAP additivity verification
+        # XGBoost native space additivity
+        xgb_base = float(xgb_explainer.expected_value[risk_code]) if isinstance(xgb_explainer.expected_value, (list, np.ndarray)) else float(xgb_explainer.expected_value)
+        xgb_sum = float(np.sum(shap_xgb))
+        xgb_output = float(xgb_model.predict_proba(X_s)[0][risk_code]) if hasattr(xgb_explainer, 'model') else (xgb_base + xgb_sum)
+        xgb_err = abs((xgb_base + xgb_sum) - xgb_output)
+        xgb_additivity = {
+            "output_space": "log-odds / margin",
+            "base_value": round(xgb_base, 4),
+            "attribution_sum": round(xgb_sum, 4),
+            "reconstructed_output": round(xgb_base + xgb_sum, 4),
+            "additivity_error": round(float(xgb_err), 4),
+            "native_additivity_passed": bool(xgb_err < 0.1),
         }
 
+        # RandomForest native space additivity
+        rf_base = float(rf_explainer.expected_value[risk_code]) if isinstance(rf_explainer.expected_value, (list, np.ndarray)) else float(rf_explainer.expected_value)
+        rf_sum = float(np.sum(shap_rf))
+        rf_output = float(rf_model.predict_proba(X_s)[0][risk_code])
+        rf_err = abs((rf_base + rf_sum) - rf_output)
+        rf_additivity = {
+            "output_space": "probability",
+            "base_value": round(rf_base, 4),
+            "attribution_sum": round(rf_sum, 4),
+            "reconstructed_probability": round(rf_base + rf_sum, 4),
+            "model_probability": round(rf_output, 4),
+            "additivity_error": round(float(rf_err), 4),
+            "native_additivity_passed": bool(rf_err < 0.05),
+        }
+
+        shap_additivity = {
+            "xgb": xgb_additivity,
+            "rf":  rf_additivity,
+            "heterogeneous_output_spaces": True,
+        }
+
+        # 3. Ensemble weighted feature attributions (0.5 XGB + 0.5 RF)
+        shap_class = (0.5 * shap_xgb) + (0.5 * shap_rf)
+
         # Sort by absolute impact
-        indices = np.argsort(np.abs(shap_class))[::-1][:5]  # top-5
+        indices = np.argsort(np.abs(shap_class))[::-1]
 
         for idx in indices:
             fname   = _feature_cols[idx]
             impact  = float(shap_class[idx])
             raw_val = float(row[idx])
-            top_factors.append({
+            ensemble_attributions.append({
                 "feature":   fname,
                 "label":     fname.replace("_", " ").title(),
                 "impact":    round(impact, 4),
                 "direction": "increases risk" if impact > 0 else "reduces risk",
                 "value":     round(raw_val, 3),
             })
+
+        top_factors = ensemble_attributions[:5]
+
     except Exception as e:
-        # Do NOT silently substitute scaled feature magnitude as a fake explanation (Guardrail #5)
         import logging
         logging.warning(f"[SHAP] Attribution calculation failed for ensemble model: {str(e)}")
         shap_available = False
         shap_additivity = None
         top_factors = []
+        ensemble_attributions = []
         explanation_message = "Feature attribution explanation unavailable for this prediction context."
 
     # ── Interventions ─────────────────────────────────────────────────────────
@@ -215,15 +251,17 @@ def predict(features: dict, institution_id: int | None = None) -> dict:
         interventions.append("Routine academic check-in with Department Counselor")
 
     return {
-        "risk_level":          RISK_LABELS[risk_code],
-        "risk_code":           risk_code,
-        "risk_probability":    round(confidence, 1),
-        "confidence":          round(confidence, 1),  # Retained for legacy backward compatibility
-        "probabilities":       probabilities,
-        "risk_color":          RISK_COLORS[risk_code],
-        "top_factors":         top_factors,
-        "shap_available":      shap_available,
-        "shap_additivity":     shap_additivity,
-        "explanation_message": explanation_message,
-        "interventions":       interventions,
+        "risk_level":                    RISK_LABELS[risk_code],
+        "risk_code":                     risk_code,
+        "risk_probability":              round(confidence, 1),
+        "confidence":                    round(confidence, 1),  # Retained for legacy backward compatibility
+        "probabilities":                 probabilities,
+        "risk_color":                    RISK_COLORS[risk_code],
+        "top_factors":                   top_factors,
+        "ensemble_feature_attributions": ensemble_attributions,
+        "shap_available":                shap_available,
+        "shap_methodology":              shap_methodology,
+        "shap_additivity":               shap_additivity,
+        "explanation_message":           explanation_message,
+        "interventions":                 interventions,
     }

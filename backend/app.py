@@ -54,7 +54,17 @@ from services.mailer import mail
 mail.init_app(app)
 
 # ── JWT Authentication Configuration ───────────────────────────────────────────
-app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "eduguard-sih2026-prod-secure-jwt-key")
+_jwt_secret = os.getenv("JWT_SECRET_KEY")
+_env = os.getenv("FLASK_ENV", os.getenv("ENV", "development")).lower()
+
+if not _jwt_secret:
+    if _env in ["production", "prod"]:
+        raise RuntimeError(
+            "FATAL SECURITY CONFIGURATION ERROR: JWT_SECRET_KEY environment variable is missing in production environment. Application refusing to start."
+        )
+    _jwt_secret = "dev-only-secret-key-sih2026-do-not-use-in-production"
+
+app.config["JWT_SECRET_KEY"] = _jwt_secret
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour
 jwt = JWTManager(app)
 
@@ -537,7 +547,8 @@ def predict_endpoint():
         return jsonify({"error": f"Missing features: {missing}"}), 400
 
     try:
-        result = ml_predict(data)
+        institution_id = current_user.get("institution_id")
+        result = ml_predict(data, institution_id=institution_id)
         return jsonify(result)
     except FileNotFoundError as e:
         return jsonify({"error": str(e)}), 503
@@ -733,10 +744,14 @@ def get_student(student_id: str):
         if not s:
             return jsonify({"error": "Student not found"}), 404
 
+        if current_user["role"] != "super_admin" and current_user.get("institution_id"):
+            if s.institution_id != current_user["institution_id"]:
+                return jsonify({"error": "Forbidden. You cannot access students from another institution."}), 403
+
         features = s.to_features_dict()
 
         try:
-            prediction = ml_predict(features)
+            prediction = ml_predict(features, institution_id=s.institution_id)
         except Exception:
             risk_map = {"Low": 0, "Medium": 1, "High": 2}
             prediction = {
@@ -784,6 +799,14 @@ def get_student_risk_history(student_id: str):
         return jsonify({"error": "Unauthorized"}), 403
 
     with get_db() as db:
+        s = db.query(Student).filter(Student.student_id == student_id).first()
+        if not s:
+            return jsonify({"error": "Student not found"}), 404
+
+        if current_user["role"] != "super_admin" and current_user.get("institution_id"):
+            if s.institution_id != current_user["institution_id"]:
+                return jsonify({"error": "Forbidden. You cannot access students from another institution."}), 403
+
         # Fetch last 30 snapshots sorted by timestamp desc, then reverse to chronological order
         snapshots = db.query(RiskSnapshot)\
                       .filter(RiskSnapshot.student_id == student_id)\

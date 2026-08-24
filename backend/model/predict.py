@@ -146,7 +146,11 @@ def predict(features: dict, institution_id: int | None = None) -> dict:
         "High":   round(float(proba_raw[2]) * 100, 1),
     }
 
-    # ── SHAP top-5 contributing features across full Voting Ensemble ─────────
+    # ── SHAP top-5 contributing features across soft-voting ensemble ─────────
+    shap_available = True
+    top_factors = []
+    explanation_message = None
+
     try:
         explainers  = _get_explainers(institution_id=institution_id)
         X_scaled_df = pd.DataFrame(X_s, columns=_feature_cols)
@@ -154,27 +158,30 @@ def predict(features: dict, institution_id: int | None = None) -> dict:
         shap_xgb = _extract_class_shap(explainers["xgb"].shap_values(X_scaled_df), risk_code)
         shap_rf  = _extract_class_shap(explainers["rf"].shap_values(X_scaled_df), risk_code)
 
-        # Average SHAP values across XGBoost and RandomForest ensemble sub-models
-        shap_class = (shap_xgb + shap_rf) / 2.0
-    except Exception:
-        # Fallback: use scaled feature magnitude as proxy if SHAP computation fails
-        shap_class = np.array([abs(X_s[0][i]) for i in range(len(row))])
+        # Soft-voting ensemble probability SHAP attribution (weighted 0.5 XGB + 0.5 RF)
+        shap_class = (0.5 * shap_xgb) + (0.5 * shap_rf)
 
-    # Sort by absolute impact
-    indices    = np.argsort(np.abs(shap_class))[::-1][:5]  # top-5
+        # Sort by absolute impact
+        indices = np.argsort(np.abs(shap_class))[::-1][:5]  # top-5
 
-    top_factors = []
-    for idx in indices:
-        fname   = _feature_cols[idx]
-        impact  = float(shap_class[idx])
-        raw_val = float(row[idx])
-        top_factors.append({
-            "feature":   fname,
-            "label":     fname.replace("_", " ").title(),
-            "impact":    round(impact, 4),
-            "direction": "increases risk" if impact > 0 else "reduces risk",
-            "value":     round(raw_val, 3),
-        })
+        for idx in indices:
+            fname   = _feature_cols[idx]
+            impact  = float(shap_class[idx])
+            raw_val = float(row[idx])
+            top_factors.append({
+                "feature":   fname,
+                "label":     fname.replace("_", " ").title(),
+                "impact":    round(impact, 4),
+                "direction": "increases risk" if impact > 0 else "reduces risk",
+                "value":     round(raw_val, 3),
+            })
+    except Exception as e:
+        # Do NOT silently substitute scaled feature magnitude as a fake explanation (Guardrail #5)
+        import logging
+        logging.warning(f"[SHAP] Attribution calculation failed for ensemble model: {str(e)}")
+        shap_available = False
+        top_factors = []
+        explanation_message = "Feature attribution explanation unavailable for this prediction context."
 
     # ── Interventions ─────────────────────────────────────────────────────────
     interventions = []
@@ -190,11 +197,13 @@ def predict(features: dict, institution_id: int | None = None) -> dict:
         interventions.append("Routine academic check-in with Department Counselor")
 
     return {
-        "risk_level":    RISK_LABELS[risk_code],
-        "risk_code":     risk_code,
-        "confidence":    round(confidence, 1),
-        "probabilities": probabilities,
-        "risk_color":    RISK_COLORS[risk_code],
-        "top_factors":   top_factors,
-        "interventions": interventions,
+        "risk_level":          RISK_LABELS[risk_code],
+        "risk_code":           risk_code,
+        "confidence":          round(confidence, 1),
+        "probabilities":       probabilities,
+        "risk_color":          RISK_COLORS[risk_code],
+        "top_factors":         top_factors,
+        "shap_available":      shap_available,
+        "explanation_message": explanation_message,
+        "interventions":       interventions,
     }

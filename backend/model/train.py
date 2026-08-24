@@ -145,19 +145,41 @@ def train(data_source=None, institution_id: int | None = None) -> str:
     print("\n[TRAIN] Fitting XGBoost + RandomForest ensemble...")
     model.fit(X_train, y_train)
 
-    # 5. Evaluate
-    y_pred = model.predict(X_test)
-    acc = float(accuracy_score(y_test, y_pred))
-    f1  = float(f1_score(y_test, y_pred, average="weighted"))
+    # 5. Evaluate with Stratified 5-Fold Cross-Validation and Detailed Metrics
+    from sklearn.model_selection import StratifiedKFold, cross_val_score
+    from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
 
-    print(f"\n[EVAL] Test Accuracy: {acc * 100:.2f}%")
-    print(f"[EVAL] Test F1 Score: {f1 * 100:.2f}%")
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cv_scores = cross_val_score(model, X_train, y_train, cv=skf, scoring="f1_macro")
+    cv_mean = float(np.mean(cv_scores))
+    cv_std  = float(np.std(cv_scores))
+
+    y_pred = model.predict(X_test)
+    acc         = float(accuracy_score(y_test, y_pred))
+    macro_f1    = float(f1_score(y_test, y_pred, average="macro"))
+    weighted_f1 = float(f1_score(y_test, y_pred, average="weighted"))
+
+    p_cls, r_cls, f_cls, _ = precision_recall_fscore_support(y_test, y_pred, labels=[0, 1, 2])
+    cm = confusion_matrix(y_test, y_pred).tolist()
+
+    class_names = ["Low", "Medium", "High"]
+    per_class_metrics = {
+        class_names[i]: {
+            "precision": round(float(p_cls[i]), 4),
+            "recall":    round(float(r_cls[i]), 4),
+            "f1_score":  round(float(f_cls[i]), 4),
+        }
+        for i in range(3)
+    }
+
+    print(f"\n[EVAL] 5-Fold CV F1-Macro: {cv_mean * 100:.2f}% (+/- {cv_std * 100:.2f}%)")
+    print(f"[EVAL] Test Accuracy:    {acc * 100:.2f}%")
+    print(f"[EVAL] Test Macro F1:    {macro_f1 * 100:.2f}%")
+    print(f"[EVAL] Test Weighted F1: {weighted_f1 * 100:.2f}%")
     print("\n[EVAL] Classification Report:")
-    print(classification_report(y_test, y_pred,
-                                target_names=["Low Risk", "Medium Risk", "High Risk"]))
+    print(classification_report(y_test, y_pred, target_names=["Low Risk", "Medium Risk", "High Risk"]))
 
     # 6. Extract Feature Importances
-    # Average the feature importances of XGBoost and Random Forest sub-models
     xgb_model = model.named_estimators_["xgb"]
     rf_model  = model.named_estimators_["rf"]
     avg_importances = (xgb_model.feature_importances_ + rf_model.feature_importances_) / 2.0
@@ -176,13 +198,18 @@ def train(data_source=None, institution_id: int | None = None) -> str:
     joblib.dump(model,  model_path)
     joblib.dump(scaler, scaler_path)
 
-    # Save metadata JSON
+    # Save comprehensive metadata JSON
     metadata = {
         "training_date":        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "institution_id":       institution_id,
         "n_samples":            int(len(X)),
         "accuracy":             round(acc, 4),
-        "f1_score":             round(f1, 4),
+        "macro_f1":             round(macro_f1, 4),
+        "weighted_f1":          round(weighted_f1, 4),
+        "cv_f1_macro_mean":     round(cv_mean, 4),
+        "cv_f1_macro_std":      round(cv_std, 4),
+        "per_class_metrics":    per_class_metrics,
+        "confusion_matrix":     cm,
         "feature_importances":  feature_importances
     }
 

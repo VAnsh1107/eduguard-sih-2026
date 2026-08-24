@@ -81,3 +81,16 @@ def test_access_protected_endpoint_with_token(client, admin_token):
     )
     assert resp.status_code == 200
     assert "total_students" in resp.get_json()
+
+
+def test_jwt_production_fail_secure(monkeypatch):
+    import os
+    import pytest
+    monkeypatch.setenv("FLASK_ENV", "production")
+    monkeypatch.delenv("JWT_SECRET_KEY", raising=False)
+    
+    jwt_secret = os.getenv("JWT_SECRET_KEY")
+    env = os.getenv("FLASK_ENV", "").lower()
+    if not jwt_secret and env == "production":
+        with pytest.raises(RuntimeError, match="FATAL SECURITY CONFIGURATION ERROR"):
+            raise RuntimeError("FATAL SECURITY CONFIGURATION ERROR: JWT_SECRET_KEY environment variable is missing in production environment.")

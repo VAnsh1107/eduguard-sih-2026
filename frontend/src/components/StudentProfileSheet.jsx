@@ -67,7 +67,7 @@ function RiskGaugeComponent({ probability, riskLevel, probabilities }) {
       <div>
         <div style={{ fontSize: '36px', fontFamily: 'var(--font-sans)', fontWeight: 800, color, lineHeight: 1 }}>{Math.round(prob)}%</div>
         <div style={{ fontSize: '13px', fontFamily: 'var(--font-sans)', color: 'var(--text-secondary)', marginTop: '4px', fontWeight: 600 }}>
-          {riskLevel ? `${riskLevel} Risk Confidence` : 'Prediction Confidence'}
+          {riskLevel ? `${riskLevel} Risk Probability` : 'Predicted Risk Probability'}
         </div>
         {probabilities && (
           <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
@@ -470,9 +470,9 @@ export default function StudentProfileSheet({ student, open, onClose }) {
                 <RiskBadge level={currentRiskLevel} />
                 <div style={{ fontSize: '12px', fontWeight: 600, color: currentRiskLevel === 'Low' ? 'var(--success)' : currentRiskLevel === 'Medium' ? 'var(--warning)' : 'var(--danger)', marginTop: '4px' }}>
                   {currentRiskLevel === 'Low'
-                    ? `${Math.round(currentRiskProb)}% Low Risk Confidence (Safe)`
+                    ? `${Math.round(currentRiskProb)}% Low Risk Probability (Safe)`
                     : currentRiskLevel === 'Medium'
-                    ? `${Math.round(currentRiskProb)}% Moderate Risk Confidence`
+                    ? `${Math.round(currentRiskProb)}% Moderate Risk Probability`
                     : `${Math.round(currentRiskProb)}% Dropout Risk Probability`}
                 </div>
                 {currentRiskLevel === 'Low' && (

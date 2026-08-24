@@ -28,7 +28,7 @@ Every academic year, approximately **15% to 20% of undergraduate students drop o
 
 > [!NOTE]
 > **Scientific Methodology & Production Disclosure:**  
-> EduGuard's current prototype demonstrates the full predictive and intervention architecture using controlled synthetic data (engineered non-linear interaction terms with Sigmoid probability mapping). The production architecture is designed for institutional historical data, featuring versioned retraining, 5-fold cross-validation, and longitudinal outcome validation.
+> EduGuard's current prototype demonstrates the full predictive and intervention architecture using controlled synthetic data (engineered non-linear interaction terms with Sigmoid probability mapping). The 7-Week Risk Trajectory endpoint provides a model-derived simulation based on current cohort baseline counts, rather than historical observational telemetry. Intervention recommendations use transparent rule-based intervention prioritization informed by model risk factors and SHAP attributions (not a second AI model). The production architecture is designed for institutional historical data, featuring versioned retraining, 5-fold cross-validation, and longitudinal outcome validation.
 
 ### 🏛️ B. Administrator & Leadership Command Center
 * **7-Week Risk Trajectory Simulation:** Model-derived risk progression curves across the student population with interactive date-filtered tooltips.
@@ -58,12 +58,6 @@ Every academic year, approximately **15% to 20% of undergraduate students drop o
 |---|---|---|
 | **Frontend Framework** | React 18 + Vite v5 | High-performance SPA with fast HMR |
 | **Styling & UI Tokens** | Apple HIG / Untitled UI Design Tokens | Strict elevation, layered shadows, Apple-inspired light mode |
-| **Motion & Physics** | Framer Motion | Spring animations, count-up numbers, slide sheets, gestures |
-| **Accessible Primitives**| Radix UI (`@radix-ui/*`) | Accessible Dialogs, Sheets, Tabs, Dropdowns, Switches |
-| **Data Visualization** | Recharts v2 | Radar profiles, Line charts, Area trends, Bar charts |
-| **Iconography** | Lucide React | Clean, modern feather icon library |
-| **Notifications** | React Hot Toast | Apple-styled floating toast alerts |
-| **Backend API** | Python Flask + Flask-CORS | Modular REST API and WebSocket gateway |
 | **Real-Time Gateway** | Flask-SocketIO + Eventlet/Gevent | Real-time bi-directional risk update streaming |
 | **Database & ORM** | SQLite / PostgreSQL + SQLAlchemy | Relational persistence with foreign-key constraints |
 | **Machine Learning** | Scikit-Learn + XGBoost | Soft voting ensemble (RandomForest + XGBoost Classifier) |
@@ -173,8 +167,8 @@ The database comes pre-seeded with 5,000 synthetic student profiles and three pr
 | **Student Wellbeing & Goals** | ✅ **100% Complete** | 5-D weekly wellbeing test & custom target streak rings |
 | **ReportLab PDF Engine** | ✅ **100% Complete** | Instant in-app evaluation brief preview & PDF export |
 | **Real-Time WebSocket Gateway** | ✅ **100% Complete** | Bi-directional risk update notifications |
-| **Automated End-to-End Audit** | ✅ **15 / 15 Tests Passed** | Automated suite passed with zero errors |
-| **Production Build** | ✅ **Clean Compilation** | Vite production build passing in 6.17s |
+| **Automated End-to-End Audit** | ✅ **27 / 27 Tests Passed** | Automated test suite passed with zero errors |
+| **Production Build** | ✅ **Clean Compilation** | Vite production build passing in 6.82s |
 
 ---
 

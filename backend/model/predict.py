@@ -173,33 +173,38 @@ def predict(features: dict, institution_id: int | None = None) -> dict:
         shap_rf  = _extract_class_shap(sv_rf, risk_code)
 
         # 2. Native independent SHAP additivity verification
-        # XGBoost native space additivity
+        # XGBoost native space additivity (raw margin / log-odds)
         xgb_base = float(xgb_explainer.expected_value[risk_code]) if isinstance(xgb_explainer.expected_value, (list, np.ndarray)) else float(xgb_explainer.expected_value)
         xgb_sum = float(np.sum(shap_xgb))
-        xgb_output = float(xgb_model.predict_proba(X_s)[0][risk_code]) if hasattr(xgb_explainer, 'model') else (xgb_base + xgb_sum)
-        xgb_err = abs((xgb_base + xgb_sum) - xgb_output)
+        xgb_reconstructed = float(xgb_base + xgb_sum)
+        xgb_native_output = float(xgb_model.predict(X_scaled_df, output_margin=True)[0][risk_code])
+        xgb_err = float(abs(xgb_reconstructed - xgb_native_output))
         xgb_additivity = {
-            "output_space": "log-odds / margin",
-            "base_value": round(xgb_base, 4),
-            "attribution_sum": round(xgb_sum, 4),
-            "reconstructed_output": round(xgb_base + xgb_sum, 4),
-            "additivity_error": round(float(xgb_err), 4),
-            "native_additivity_passed": bool(xgb_err < 0.1),
+            "output_space": "raw margin / log-odds",
+            "base_value": round(xgb_base, 5),
+            "attribution_sum": round(xgb_sum, 5),
+            "reconstructed_output": round(xgb_reconstructed, 5),
+            "native_model_output": round(xgb_native_output, 5),
+            "additivity_error": round(xgb_err, 6),
+            "tolerance_used": 0.001,
+            "native_additivity_passed": bool(xgb_err <= 0.001),
         }
 
-        # RandomForest native space additivity
+        # RandomForest native space additivity (probability)
         rf_base = float(rf_explainer.expected_value[risk_code]) if isinstance(rf_explainer.expected_value, (list, np.ndarray)) else float(rf_explainer.expected_value)
         rf_sum = float(np.sum(shap_rf))
-        rf_output = float(rf_model.predict_proba(X_s)[0][risk_code])
-        rf_err = abs((rf_base + rf_sum) - rf_output)
+        rf_reconstructed = float(rf_base + rf_sum)
+        rf_native_output = float(rf_model.predict_proba(X_scaled_df)[0][risk_code])
+        rf_err = float(abs(rf_reconstructed - rf_native_output))
         rf_additivity = {
             "output_space": "probability",
-            "base_value": round(rf_base, 4),
-            "attribution_sum": round(rf_sum, 4),
-            "reconstructed_probability": round(rf_base + rf_sum, 4),
-            "model_probability": round(rf_output, 4),
-            "additivity_error": round(float(rf_err), 4),
-            "native_additivity_passed": bool(rf_err < 0.05),
+            "base_value": round(rf_base, 5),
+            "attribution_sum": round(rf_sum, 5),
+            "reconstructed_output": round(rf_reconstructed, 5),
+            "native_model_output": round(rf_native_output, 5),
+            "additivity_error": round(rf_err, 6),
+            "tolerance_used": 0.001,
+            "native_additivity_passed": bool(rf_err <= 0.001),
         }
 
         shap_additivity = {

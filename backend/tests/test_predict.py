@@ -152,10 +152,24 @@ def test_shap_native_additivity_structure(client, admin_token):
     additivity = data["shap_additivity"]
     assert "xgb" in additivity
     assert "rf" in additivity
-    assert additivity["xgb"]["output_space"] == "log-odds / margin"
-    assert additivity["rf"]["output_space"] == "probability"
-    assert "native_additivity_passed" in additivity["xgb"]
-    assert "native_additivity_passed" in additivity["rf"]
+
+    # 1. XGBoost native margin additivity verification
+    xgb = additivity["xgb"]
+    assert xgb["output_space"] == "raw margin / log-odds"
+    assert "native_model_output" in xgb
+    assert "reconstructed_output" in xgb
+    assert "additivity_error" in xgb
+    assert xgb["native_additivity_passed"] is True
+    assert abs(xgb["reconstructed_output"] - xgb["native_model_output"]) <= 0.001
+
+    # 2. RandomForest native probability additivity verification
+    rf = additivity["rf"]
+    assert rf["output_space"] == "probability"
+    assert "native_model_output" in rf
+    assert "reconstructed_output" in rf
+    assert "additivity_error" in rf
+    assert rf["native_additivity_passed"] is True
+    assert abs(rf["reconstructed_output"] - rf["native_model_output"]) <= 0.001
 
 
 def test_cohort_analytics_tenant_isolation(client, admin_token):

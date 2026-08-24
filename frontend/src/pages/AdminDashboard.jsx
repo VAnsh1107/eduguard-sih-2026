@@ -198,18 +198,28 @@ export default function AdminDashboard() {
   }
 
   const formatTrendWeekLabel = (str, idx) => {
-    if (!str) return `W${idx + 1}`
-    const raw = String(str)
-    const cleaned = raw.includes('T') ? raw : `${raw}T00:00:00`
-    const d = new Date(cleaned)
-    if (!isNaN(d.getTime())) {
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    if (!str) {
+      console.warn(`[TrendChart] Empty or missing week_start encountered at index ${idx}:`, str)
+      return `W${idx + 1}`
     }
-    const dDirect = new Date(raw)
-    if (!isNaN(dDirect.getTime())) {
-      return dDirect.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const raw = String(str).trim()
+
+    // 1. Direct ISO / Date constructor attempt (handles standard YYYY-MM-DD or ISO strings)
+    const directDate = new Date(raw)
+    if (!isNaN(directDate.getTime())) {
+      return directDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     }
-    return raw || `W${idx + 1}`
+
+    // 2. Fallback attempt appending T00:00:00 if string is plain YYYY-MM-DD date without time
+    const isoCleaned = raw.includes('T') ? raw : `${raw}T00:00:00`
+    const isoDate = new Date(isoCleaned)
+    if (!isNaN(isoDate.getTime())) {
+      return isoDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    }
+
+    // 3. Unparseable date warning & fallback (prevents chart collapse without hiding data issue)
+    console.warn(`[TrendChart] Invalid week_start date format encountered at index ${idx}:`, { originalValue: str, raw })
+    return `W${idx + 1}`
   }
 
   const fetchTrendData = () => {

@@ -62,30 +62,53 @@ def generate_dataset():
     )
 
     # -------------------------------------------------------------------------
-    # Compute dropout risk score (0–1) using a weighted formula
+    # Compute dropout risk score using realistic non-linear interaction terms
     # -------------------------------------------------------------------------
-    risk_score = (
-        - 0.25 * (attendance_rate)             # low attendance → high risk
-        - 0.20 * (gpa / 10)                    # low GPA → high risk
-        - 0.15 * (assignment_submission_rate)   # low submission → high risk
-        - 0.10 * (lms_login_frequency / 21)     # low engagement → high risk
-        - 0.08 * (socioeconomic_score / 10)     # low SES → high risk
-        - 0.07 * (mental_health_score / 10)     # low mental health → high risk
-        + 0.05 * (previous_backlogs / 5)        # more backlogs → higher risk
-        - 0.05 * (scholarship_recipient)        # scholarship = protective
-        + 0.05 * (distance_from_college / 80)   # far distance → higher risk
-        - 0.03 * (family_income_bracket / 5)    # higher income = lower risk
-        - 0.02 * extracurricular_participation  # active = slightly protective
+    # Base linear terms
+    base_linear = (
+        - 0.22 * (attendance_rate)
+        - 0.18 * (gpa / 10.0)
+        - 0.12 * (assignment_submission_rate)
+        - 0.08 * (lms_login_frequency / 21.0)
+        - 0.07 * (socioeconomic_score / 10.0)
+        - 0.06 * (mental_health_score / 10.0)
+        + 0.06 * (previous_backlogs / 5.0)
+        - 0.04 * (scholarship_recipient)
+        + 0.04 * (distance_from_college / 80.0)
+        - 0.03 * (family_income_bracket / 5.0)
+        - 0.02 * extracurricular_participation
     )
 
-    # Normalize to 0–1
-    risk_score = (risk_score - risk_score.min()) / (risk_score.max() - risk_score.min())
-    # Add small noise
-    risk_score = np.clip(risk_score + np.random.normal(0, 0.05, N), 0, 1)
+    # Non-linear interaction & compound risk terms
+    # 1. Dual Academic Failure Synergy (Low Attendance AND Low GPA compound risk)
+    dual_academic_risk = np.where((attendance_rate < 0.65) & (gpa < 5.0), 0.25, 0.0)
+    
+    # 2. Backlog & Mental Distress Synergy (Multiple backlogs + low mental health)
+    backlog_distress_risk = (previous_backlogs / 5.0) * (1.0 - mental_health_score / 10.0) * 0.15
+
+    # 3. Financial & Commute Vulnerability Synergy (Low SES + Long Commute)
+    commute_financial_risk = (1.0 - socioeconomic_score / 10.0) * (distance_from_college / 80.0) * 0.10
+
+    # 4. Protective Re-engagement Synergy (High LMS logins offset low attendance)
+    lms_reengagement_protective = np.where((attendance_rate < 0.70) & (lms_login_frequency > 10), -0.12, 0.0)
+
+    total_logit = (
+        base_linear
+        + dual_academic_risk
+        + backlog_distress_risk
+        + commute_financial_risk
+        + lms_reengagement_protective
+    )
+
+    # Apply Sigmoid non-linear transformation
+    sig_prob = 1.0 / (1.0 + np.exp(- total_logit * 6.0 + 1.5))
+    
+    # Add realistic stochastic noise
+    risk_score = np.clip(sig_prob + np.random.normal(0, 0.06, N), 0, 1)
 
     # Convert to 3-class label: 0=Low, 1=Medium, 2=High
-    dropout_risk = np.where(risk_score < 0.40, 0,
-                   np.where(risk_score < 0.70, 1, 2))
+    dropout_risk = np.where(risk_score < 0.38, 0,
+                   np.where(risk_score < 0.68, 1, 2))
 
     # --- Student IDs and names (for dashboard display) ---
     student_ids = [f"STU{str(i+1001).zfill(4)}" for i in range(N)]

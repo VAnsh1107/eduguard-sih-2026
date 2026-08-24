@@ -54,7 +54,7 @@ from services.mailer import mail
 mail.init_app(app)
 
 # ── JWT Authentication Configuration ───────────────────────────────────────────
-app.config["JWT_SECRET_KEY"] = "super-secret-jwt-key-sih-2024"
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "eduguard-sih2026-prod-secure-jwt-key")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour
 jwt = JWTManager(app)
 
@@ -543,6 +543,102 @@ def predict_endpoint():
         return jsonify({"error": str(e)}), 503
     except Exception as e:
         return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
+
+
+@app.route("/api/predict/what-if", methods=["POST"])
+@jwt_required()
+def predict_what_if_endpoint():
+    """
+    Runs baseline ML prediction and counterfactual modified ML prediction,
+    returning true model-derived risk drop metrics and class deltas.
+    """
+    import json
+    current_user = json.loads(get_jwt_identity())
+    if current_user["role"] not in ["admin", "teacher", "super_admin"]:
+        return jsonify({"error": "Unauthorized. Requires admin or teacher role."}), 403
+
+    data = request.get_json(force=True) or {}
+    baseline_features = data.get("baseline", {})
+    deltas = data.get("deltas", {})
+
+    required = [
+        "attendance_rate", "gpa", "assignment_submission_rate",
+        "lms_login_frequency", "library_visits", "socioeconomic_score",
+        "scholarship_recipient", "family_income_bracket", "previous_backlogs",
+        "distance_from_college", "extracurricular_participation", "mental_health_score",
+    ]
+    missing = [f for f in required if f not in baseline_features]
+    if missing:
+        return jsonify({"error": f"Missing baseline features: {missing}"}), 400
+
+    try:
+        # Server-side validation of baseline features (Guardrail #15)
+        clean_baseline = {
+            "attendance_rate": max(0.0, min(1.0, float(baseline_features["attendance_rate"]))),
+            "gpa": max(0.0, min(10.0, float(baseline_features["gpa"]))),
+            "assignment_submission_rate": max(0.0, min(1.0, float(baseline_features["assignment_submission_rate"]))),
+            "lms_login_frequency": max(0, min(50, int(baseline_features["lms_login_frequency"]))),
+            "library_visits": max(0, min(50, int(baseline_features["library_visits"]))),
+            "socioeconomic_score": max(0.0, min(10.0, float(baseline_features["socioeconomic_score"]))),
+            "scholarship_recipient": 1 if int(baseline_features["scholarship_recipient"]) > 0 else 0,
+            "family_income_bracket": max(1, min(5, int(baseline_features["family_income_bracket"]))),
+            "previous_backlogs": max(0, min(20, int(baseline_features["previous_backlogs"]))),
+            "distance_from_college": max(0.0, min(200.0, float(baseline_features["distance_from_college"]))),
+            "extracurricular_participation": 1 if float(baseline_features["extracurricular_participation"]) > 0 else 0,
+            "mental_health_score": max(1.0, min(10.0, float(baseline_features["mental_health_score"]))),
+        }
+
+        institution_id = current_user.get("institution_id")
+
+        # 1. Run baseline ML prediction
+        baseline_pred = ml_predict(clean_baseline, institution_id=institution_id)
+
+        # 2. Construct modified counterfactual features with validated deltas
+        modified_features = dict(clean_baseline)
+        
+        # Server-side bounded delta validation
+        att_boost = max(0.0, min(50.0, float(deltas.get("attendance_boost", 0))))
+        gpa_boost = max(0.0, min(5.0, float(deltas.get("gpa_boost", 0))))
+        sub_boost = max(0.0, min(50.0, float(deltas.get("assignment_boost", 0))))
+        mh_boost  = max(0.0, min(5.0, float(deltas.get("mental_health_boost", 0))))
+
+        modified_features["attendance_rate"] = min(1.0, modified_features["attendance_rate"] + (att_boost / 100.0))
+        modified_features["gpa"] = min(10.0, modified_features["gpa"] + gpa_boost)
+        modified_features["assignment_submission_rate"] = min(1.0, modified_features["assignment_submission_rate"] + (sub_boost / 100.0))
+        modified_features["mental_health_score"] = min(10.0, modified_features["mental_health_score"] + mh_boost)
+
+        # 3. Run counterfactual prediction through ML model
+        what_if_pred = ml_predict(modified_features, institution_id=institution_id)
+
+        # 4. Calculate probability deltas & class transition (Guardrail #13)
+        prob_delta = {
+            "Low": round(what_if_pred["probabilities"]["Low"] - baseline_pred["probabilities"]["Low"], 1),
+            "Medium": round(what_if_pred["probabilities"]["Medium"] - baseline_pred["probabilities"]["Medium"], 1),
+            "High": round(what_if_pred["probabilities"]["High"] - baseline_pred["probabilities"]["High"], 1),
+        }
+
+        risk_class_delta = {
+            "from": baseline_pred["risk_level"],
+            "to": what_if_pred["risk_level"],
+            "changed": baseline_pred["risk_level"] != what_if_pred["risk_level"],
+        }
+
+        baseline_high = baseline_pred["probabilities"].get("High", baseline_pred["confidence"])
+        simulated_high = what_if_pred["probabilities"].get("High", what_if_pred["confidence"])
+        risk_drop_pct = max(0.0, round(float(baseline_high - simulated_high), 1))
+
+        return jsonify({
+            "original": baseline_pred,
+            "modified": what_if_pred,
+            "probability_delta": prob_delta,
+            "risk_class_delta": risk_class_delta,
+            "risk_drop_pct": risk_drop_pct,
+            "modified_features": modified_features
+        })
+    except (ValueError, TypeError) as e:
+        return jsonify({"error": f"Invalid feature data format: {str(e)}"}), 400
+    except Exception as e:
+        return jsonify({"error": f"What-If prediction request failed: {str(e)}"}), 500
 
 
 @app.route("/api/students", methods=["GET"])

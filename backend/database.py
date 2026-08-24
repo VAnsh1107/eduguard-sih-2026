@@ -69,7 +69,11 @@ def set_current_institution_id(institution_id):
 
 
 def reset_current_institution_id(token):
-    CURRENT_INSTITUTION_ID.reset(token)
+    if token is not None:
+        try:
+            CURRENT_INSTITUTION_ID.reset(token)
+        except Exception:
+            pass
 
 
 def get_current_institution_id():

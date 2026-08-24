@@ -31,13 +31,14 @@ def client(tmp_path):
     patches = [
         patch("app.seed_database"),
         patch("apscheduler.schedulers.background.BackgroundScheduler.start"),
-        patch("threading.Thread", side_effect=lambda **kw: type("_Noop", (), {"start": lambda s: None, "daemon": True})()),
+        patch("threading.Thread.start", return_value=None),
     ]
     for p in patches:
         p.start()
 
-    # Import app — this triggers Base.metadata.create_all(bind=engine)
-    # which now uses our in-memory engine because database.engine was swapped.
+    # Ensure all tables are created on the in-memory SQLite database
+    _db_mod.Base.metadata.create_all(bind=_mem)
+
     from app import app as flask_app
 
     flask_app.config["TESTING"] = True

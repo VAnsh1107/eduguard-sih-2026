@@ -90,3 +90,47 @@ def test_predict_rejects_missing_fields(client, admin_token):
     )
     assert resp.status_code == 400
     assert "Missing features" in resp.get_json()["error"]
+
+
+def test_predict_what_if_success(client, admin_token):
+    payload = {
+        "baseline": _student_payload(),
+        "deltas": {
+            "attendance_boost": 20.0,
+            "gpa_boost": 1.0,
+        }
+    }
+    resp = client.post(
+        "/api/predict/what-if",
+        json=payload,
+        headers=_auth_header(admin_token),
+    )
+    if resp.status_code != 200:
+        print("[TEST ERROR RESPONSE]:", resp.get_json())
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert "original" in data
+    assert "modified" in data
+    assert "probability_delta" in data
+    assert "risk_class_delta" in data
+    assert "risk_drop_pct" in data
+
+
+def test_predict_what_if_server_side_validation(client, admin_token):
+    payload = {
+        "baseline": _student_payload(),
+        "deltas": {
+            "attendance_boost": 999.0,  # Out-of-bounds slider value from client
+            "gpa_boost": -50.0,
+        }
+    }
+    resp = client.post(
+        "/api/predict/what-if",
+        json=payload,
+        headers=_auth_header(admin_token),
+    )
+    assert resp.status_code == 200
+    data = resp.get_json()
+    # Server-side validation clips values safely
+    assert data["modified_features"]["attendance_rate"] <= 1.0
+    assert data["modified_features"]["gpa"] >= 0.0

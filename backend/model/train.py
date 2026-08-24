@@ -129,15 +129,16 @@ def train(data_source=None, institution_id: int | None = None) -> str:
     print(f"\n[DATA] {len(X)} records | {X.shape[1]} features")
     print(f"  Class distribution: {y.value_counts().to_dict()}")
 
-    # 2. Scale
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-
-    # 3. Split
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_scaled, y, test_size=0.2, random_state=42, stratify=y
+    # 2. Split first (prevents data leakage from test set into scaler)
+    X_train_raw, X_test_raw, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
     )
-    print(f"\n[SPLIT] Train: {len(X_train)} | Test: {len(X_test)}")
+    print(f"\n[SPLIT] Train: {len(X_train_raw)} | Test: {len(X_test_raw)}")
+
+    # 3. Scale strictly on training set
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train_raw)
+    X_test = scaler.transform(X_test_raw)
 
     # 4. Build + train ensemble
     model = build_ensemble()

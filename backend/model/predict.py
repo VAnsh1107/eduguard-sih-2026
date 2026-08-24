@@ -32,19 +32,17 @@ FEATURE_COLS = [
 _model        = None
 _scaler       = None
 _feature_cols = None
-_explainer    = None   # SHAP TreeExplainer (cached)
+_explainers   = None   # Cached dict of SHAP TreeExplainers for ensemble sub-models
 
 RISK_LABELS = {0: "Low", 1: "Medium", 2: "High"}
 RISK_COLORS = {0: "#10B981", 1: "#F59E0B", 2: "#EF4444"}  # emerald / amber / red
 
 
 def _load_artifacts(institution_id=None):
-    global _model, _scaler, _feature_cols, _explainer
-    # If the active model ID changed, reload it
-    from registry import get_active_version_id
+    global _model, _scaler, _feature_cols, _explainers
+    from registry import get_active_model, get_active_version_id
     current_active_id = get_active_version_id(institution_id=institution_id)
     
-    # We store the loaded version ID to detect changes
     if not hasattr(_load_artifacts, "loaded_version_id"):
         _load_artifacts.loaded_version_id = None
         
@@ -53,18 +51,21 @@ def _load_artifacts(institution_id=None):
         _model, _scaler = get_active_model(institution_id=institution_id)
         _feature_cols = FEATURE_COLS
         _load_artifacts.loaded_version_id = expected_loaded_id
-        _explainer = None  # Reset SHAP explainer cache so it rebuilds for new model
+        _explainers = None  # Reset SHAP explainer cache so it rebuilds for new model
 
 
-def _get_explainer(institution_id=None):
-    """Lazily build a SHAP explainer for the XGB sub-estimator."""
-    global _explainer
-    if _explainer is None:
+def _get_explainers(institution_id=None):
+    """Lazily build SHAP TreeExplainers for both sub-estimators (XGBoost and RandomForest)."""
+    global _explainers
+    if _explainers is None:
         _load_artifacts(institution_id=institution_id)
-        # Extract XGB from voting ensemble
         xgb_model = _model.named_estimators_["xgb"]
-        _explainer = shap.TreeExplainer(xgb_model)
-    return _explainer
+        rf_model  = _model.named_estimators_["rf"]
+        _explainers = {
+            "xgb": shap.TreeExplainer(xgb_model),
+            "rf":  shap.TreeExplainer(rf_model),
+        }
+    return _explainers
 
 
 def _intervention_map(feature: str, value: float) -> str | None:
@@ -95,6 +96,18 @@ def _intervention_map(feature: str, value: float) -> str | None:
     return None
 
 
+def _extract_class_shap(shap_vals, risk_code):
+    """Extract a 1D array of feature SHAP values for a specific predicted class."""
+    if isinstance(shap_vals, list):
+        idx = min(risk_code, len(shap_vals) - 1)
+        return shap_vals[idx][0]
+    elif len(shap_vals.shape) == 3:
+        idx = min(risk_code, shap_vals.shape[0] - 1)
+        return shap_vals[idx][0]
+    else:
+        return shap_vals[0]
+
+
 def predict(features: dict, institution_id: int | None = None) -> dict:
     """
     Predict dropout risk for a single student.
@@ -117,10 +130,10 @@ def predict(features: dict, institution_id: int | None = None) -> dict:
     """
     _load_artifacts(institution_id=institution_id)
 
-    # Build feature array in correct order
-    row = [features.get(col, 0) for col in _feature_cols]
-    X   = np.array(row).reshape(1, -1)
-    X_s = _scaler.transform(X)
+    # Build feature DataFrame in correct order
+    row  = [features.get(col, 0) for col in _feature_cols]
+    X_df = pd.DataFrame([row], columns=_feature_cols)
+    X_s  = _scaler.transform(X_df)
 
     # Ensemble prediction
     proba_raw  = _model.predict_proba(X_s)[0]          # [P_low, P_med, P_high]
@@ -133,28 +146,19 @@ def predict(features: dict, institution_id: int | None = None) -> dict:
         "High":   round(float(proba_raw[2]) * 100, 1),
     }
 
-    # ── SHAP top-3 contributing features ──────────────────────────────────────
+    # ── SHAP top-5 contributing features across full Voting Ensemble ─────────
     try:
-        explainer  = _get_explainer(institution_id=institution_id)
-        X_df       = pd.DataFrame(X, columns=_feature_cols)
-        X_scaled_df = pd.DataFrame(_scaler.transform(X_df), columns=_feature_cols)
-        shap_vals  = explainer.shap_values(X_scaled_df)
+        explainers  = _get_explainers(institution_id=institution_id)
+        X_scaled_df = pd.DataFrame(X_s, columns=_feature_cols)
 
-        # shap_vals can be: list of arrays (one per class) or a 3D array
-        if isinstance(shap_vals, list):
-            # list of shape (n_samples, n_features), one per class
-            idx = min(risk_code, len(shap_vals) - 1)
-            shap_class = shap_vals[idx][0]
-        elif len(shap_vals.shape) == 3:
-            # (n_classes, n_samples, n_features)
-            idx = min(risk_code, shap_vals.shape[0] - 1)
-            shap_class = shap_vals[idx][0]
-        else:
-            # (n_samples, n_features) — binary / single output
-            shap_class = shap_vals[0]
+        shap_xgb = _extract_class_shap(explainers["xgb"].shap_values(X_scaled_df), risk_code)
+        shap_rf  = _extract_class_shap(explainers["rf"].shap_values(X_scaled_df), risk_code)
+
+        # Average SHAP values across XGBoost and RandomForest ensemble sub-models
+        shap_class = (shap_xgb + shap_rf) / 2.0
     except Exception:
-        # Fallback: use raw feature values as a proxy for importance
-        shap_class = np.array([abs(row[i]) for i in range(len(row))])
+        # Fallback: use scaled feature magnitude as proxy if SHAP computation fails
+        shap_class = np.array([abs(X_s[0][i]) for i in range(len(row))])
 
     # Sort by absolute impact
     indices    = np.argsort(np.abs(shap_class))[::-1][:5]  # top-5

@@ -135,9 +135,10 @@ export default function PredictionForm() {
   const [result, setResult] = useState(null)
   const [activePreset, setActivePreset] = useState(null)
 
-  // Counterfactual "What-If" State
   const [whatIfAttendanceDelta, setWhatIfAttendanceDelta] = useState(15)
   const [whatIfGpaDelta, setWhatIfGpaDelta] = useState(0.8)
+  const [whatIfResult, setWhatIfResult] = useState(null)
+  const [whatIfLoading, setWhatIfLoading] = useState(false)
 
   function setFieldValue(key, val) {
     setValues(prev => ({ ...prev, [key]: val }))
@@ -153,6 +154,7 @@ export default function PredictionForm() {
     if (e) e.preventDefault()
     setLoading(true)
     setResult(null)
+    setWhatIfResult(null)
     
     try {
       const payload = { ...values }
@@ -170,14 +172,45 @@ export default function PredictionForm() {
     }
   }
 
-  // Calculate simulated What-If counterfactual metrics
-  const originalConf = result ? result.confidence : 50
-  const isHigh = result?.risk_level === 'High'
-  const isMed = result?.risk_level === 'Medium'
+  // Trigger real backend ML counterfactual inference whenever sliders or prediction change
+  React.useEffect(() => {
+    if (!result) return
+    let canceled = false
+    setWhatIfLoading(true)
 
-  const reductionFactor = (whatIfAttendanceDelta * 1.2) + (whatIfGpaDelta * 15)
-  const simulatedProb = Math.max(8, Math.round(originalConf - (isHigh ? reductionFactor : reductionFactor * 0.7)))
-  const simulatedRiskLevel = simulatedProb >= 70 ? 'High' : simulatedProb >= 40 ? 'Medium' : 'Low'
+    const timer = setTimeout(async () => {
+      try {
+        const payload = { ...values }
+        Object.keys(payload).forEach(k => { payload[k] = Number(payload[k]) })
+
+        const res = await axios.post('/api/predict/what-if', {
+          baseline: payload,
+          deltas: {
+            attendance_boost: whatIfAttendanceDelta,
+            gpa_boost: whatIfGpaDelta,
+          }
+        })
+        if (!canceled) {
+          setWhatIfResult(res.data)
+        }
+      } catch (e) {
+        console.warn('What-If ML request failed:', e)
+      } finally {
+        if (!canceled) setWhatIfLoading(false)
+      }
+    }, 250)
+
+    return () => {
+      canceled = true
+      clearTimeout(timer)
+    }
+  }, [result, values, whatIfAttendanceDelta, whatIfGpaDelta])
+
+  // Extract simulated What-If counterfactual metrics from real ML endpoint response
+  const originalConf = result ? result.confidence : 50
+  const simulatedProb = whatIfResult?.simulated ? Math.round(whatIfResult.simulated.confidence) : originalConf
+  const simulatedRiskLevel = whatIfResult?.simulated ? whatIfResult.simulated.risk_level : (result?.risk_level || 'Low')
+  const riskDropPct = whatIfResult?.risk_drop_pct ?? Math.max(0, Math.round(originalConf - simulatedProb))
 
   const groups = {
     'Academic Performance': FIELDS.filter(f => f.group === 'Academic Performance'),
@@ -466,7 +499,7 @@ export default function PredictionForm() {
                           fontSize: '12px', fontWeight: 700, padding: '3px 8px', borderRadius: '980px',
                           backgroundColor: 'var(--success-light)', color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '4px'
                         }}>
-                          ↓ -{Math.max(0, Math.round(originalConf - simulatedProb))}% Risk Drop
+                          ↓ -{riskDropPct}% ML Risk Drop
                         </div>
                       </div>
                     </div>

@@ -1,237 +1,241 @@
-# 🛡️ EduGuard — Proactive AI Early-Warning & Student Retention Platform
+# EduGuard
 
-> **Smart India Hackathon (SIH 2026)**  
-> **Domain:** AI in Education / Higher Education Student Retention  
-> **Target Problem:** Proactive Identification of Academic Attrition & Prescriptive Intervention Dispatch
+EduGuard is an AI-powered early-warning student retention platform designed for higher education institutions to proactively identify at-risk students and dispatch targeted academic and wellbeing support.
 
 ---
 
-## 📌 1. Project Objective
+## Overview
 
-Every academic year, approximately **15% to 20% of undergraduate students drop out silently**. Traditional university Enterprise Resource Planning (ERP) systems operate reactively—noticing student disengagement only after midterm exams are failed, semester registrations lapse, or fees go unpaid. By then, remedial intervention is often too late.
+Every academic year, an estimated 15% to 20% of undergraduate students drop out silently. Traditional university Enterprise Resource Planning (ERP) systems operate reactively—noticing student disengagement only after midterm exams are failed, semester registrations lapse, or tuition fees go unpaid. By that point, remedial intervention is often too late.
 
-**EduGuard** is a full-stack, institutional-grade early warning and retention intelligence platform designed to catch student attrition indicators within the critical **Weeks 2 to 6 window**. By uniting 12 multi-dimensional signals across academic performance, behavioral engagement, library activity, commuting distance, and self-reported mental wellbeing, EduGuard equips educational institutions to:
+EduGuard provides early warning and retention intelligence designed to catch student attrition indicators within the critical Weeks 2 to 6 window of an academic term. By integrating 12 multi-dimensional indicators across academic performance, digital engagement, library utilization, commuting distance, and self-reported mental wellbeing, EduGuard equips university leadership and academic mentors with actionable retention insights.
 
-1. **Detect Early Attrition:** Flag emerging academic and emotional distress weeks before examinations.
-2. **Eliminate Black-Box Confusion:** Provide game-theoretic **SHAP (SHapley Additive exPlanations)** factor attribution aggregated from both ensemble models so mentors understand the drivers behind a student's risk level.
-3. **Simulate Solutions:** Offer an interactive **Counterfactual "What-If" Studio** enabling mentors to simulate recovery trajectories before assigning remedial plans.
-4. **Streamline Interventions:** Facilitate seamless 1-click support assignments (tutoring, counselor referrals, transport subsidies) with instant institutional PDF evaluation briefs.
+The platform combines machine learning predictions with game-theoretic SHAP feature attributions, counterfactual "What-If" simulation, transparent rule-based intervention prioritization, and multi-tenant security architecture.
 
 ---
 
-## ✨ 2. Key Features
+## Core Workflow
 
-### 🧠 A. Machine Learning & Explainability Engine
-* **Voting Ensemble Classification:** Dual-pipeline combining **RandomForest** (for non-linear behavioral clustering) and **XGBoost** (for gradient boosting on weak engagement signals) evaluated via Pipeline-isolated **Stratified 5-Fold Cross-Validation (82.32% ± 2.68% F1-Macro, 87.10% Test Accuracy, 79.49% Test Macro F1)**.
-* **Soft-Voting SHAP Attribution:** Feature attributions aggregated from both ensemble members using matching soft-voting weights, with automated additivity sanity checks.
-* **Real ML Counterfactual "What-If" Studio:** Interactive sliders for attendance boosts and GPA improvement that execute true model-derived re-inference, returning model-derived probability deltas and class transitions.
-
-> [!NOTE]
-> **Scientific Methodology & Production Disclosure:**  
-> EduGuard's current prototype demonstrates the full predictive and intervention architecture using controlled synthetic data (engineered non-linear interaction terms with Sigmoid probability mapping). The 7-Week Risk Trajectory endpoint provides a model-derived simulation based on current cohort baseline counts, rather than historical observational telemetry. Intervention recommendations use transparent rule-based intervention prioritization informed by model risk factors and SHAP attributions (not a second AI model). The production architecture is designed for institutional historical data, featuring versioned retraining, 5-fold cross-validation, and longitudinal outcome validation.
-
-### 🏛️ B. Administrator & Leadership Command Center
-* **7-Week Risk Trajectory Simulation:** Model-derived risk progression curves across the student population with interactive date-filtered tooltips.
-* **Live Model Retraining Terminal:** In-browser streaming modal showing live training epochs, 5-fold stratified cross-validation metrics, and model version registry auditing.
-* **Dynamic Alert Threshold Calculator:** Interactive trigger slider with live cohort calculation (e.g. *313 students triggered at 75% threshold*).
-* **Batch Ingestion & Export:** Drag-and-drop CSV batch student onboarding and 1-click database export.
-
-### 👩‍🏫 C. Teacher & Academic Mentor Command Center
-* **Multi-Criteria Filter Matrix:** Filter students by Department, Semester (1–8), and Risk Tier with removable active pill chips.
-* **Interactive Spotlight Search:** Global `Ctrl + K` live-search modal with debounced query resolution across 5,000+ student records.
-* **1-Click Student Radar Profile:** Slide-over sheet with normalized 6-axis performance radar visualizer (GPA, Attendance, Assignments, LMS Logins, Wellbeing, Social).
-* **In-App Institutional PDF Brief & Download:** Formatted institutional evaluation brief preview with 1-click ReportLab PDF export.
-
-### 🎓 D. Student Wellbeing & Goal Hub
-* **Personalized Goal Streaks:** Custom target setter for Attendance, GPA, and Assignment completion with progress rings and streak counters.
-* **5-Dimensional Weekly Wellbeing Check-in:** 30-second mobile slider test (Stress, Sleep, Motivation, Social Connection, Physical Health) that feeds into model weights as a leading indicator.
-* **Assigned Support Tracking:** Direct visibility into allocated mentorship programs without discouraging punitive labels.
-
-### ⚡ E. Real-Time WebSockets & Telemetry
-* **Live Event Stream:** Powered by `Flask-SocketIO` to broadcast instant escalation notices whenever a student's risk category transitions.
+```
+Student Data Collection 
+   └── 12 Multi-Dimensional Indicators (Academic, Behavioral, Logistics, Wellbeing)
+        │
+        ▼
+Risk Prediction Engine 
+   └── RandomForest + XGBoost Soft-Voting Ensemble (Predicts Low / Medium / High Risk)
+        │
+        ▼
+Explainability & Attribution 
+   └── Dual SHAP TreeExplainers (Identifies Top Factor Attributions & Risk Drivers)
+        │
+        ▼
+Counterfactual "What-If" Analysis 
+   └── Real-Time Model Re-Inference (Simulates Metric Adjustments & Class Transitions)
+        │
+        ▼
+Prescriptive Support & Interventions 
+   └── Rule-Based Prioritization Engine (Ranks Tutoring, Counseling, Logistics Support)
+        │
+        ▼
+Follow-up & Outcome Tracking 
+   └── BEFORE → AFTER Risk Probability Monitoring (Observes Post-Intervention Status)
+```
 
 ---
 
-## 🛠️ 3. Technology Stack
+## Key Features
 
-| Layer | Technology / Library | Purpose |
-|---|---|---|
-| **Frontend Framework** | React 18 + Vite v5 | High-performance SPA with fast HMR |
-| **Styling & UI Tokens** | Apple HIG / Untitled UI Design Tokens | Strict elevation, layered shadows, Apple-inspired light mode |
-| **Real-Time Gateway** | Flask-SocketIO + Eventlet/Gevent | Real-time bi-directional risk update streaming |
-| **Database & ORM** | SQLite / PostgreSQL + SQLAlchemy | Relational persistence with foreign-key constraints |
-| **Machine Learning** | Scikit-Learn + XGBoost | Soft voting ensemble (RandomForest + XGBoost Classifier) |
-| **Model Explainability**| SHAP (TreeExplainer) | Feature attribution and Shapley value calculations |
-| **Document Generation**| ReportLab | High-fidelity institutional PDF generation |
-| **Authentication** | Flask-JWT-Extended | Stateless HMAC-SHA256 JWT auth with role claims |
+* **Soft-Voting Ensemble Classification:** Combines RandomForest and XGBoost classifiers to evaluate student attrition risk based on 12 features.
+* **SHAP Explainability:** Uses dual `TreeExplainer` instances to output directional feature attributions, explaining the primary drivers behind each student's risk assignment.
+* **Counterfactual "What-If" Studio:** Allows mentors to interactively adjust student metrics (e.g. attendance or GPA) and re-run model inference in real time to observe predicted probability changes.
+* **Prioritized Intervention Recommendations:** Ranks support plans (academic tutoring, wellness referrals, financial aid) using transparent rules tied to student risk drivers.
+* **Multi-Tenant Scoping & Security:** Implements JWT authentication, role-based access control (RBAC), and database-level institution isolation.
+* **7-Week Risk Trajectory Simulation:** Visualizes cohort risk progression curves across recent weeks derived from baseline student data.
+* **Institutional PDF Brief Generator:** Produces instant single-student retention summaries formatted for administrative review via ReportLab.
+* **Real-Time Event Gateway:** Broadcasts instant risk category transition alerts via WebSocket (`Flask-SocketIO`).
 
 ---
 
-## 🚀 4. Setup & Installation Instructions
+## Architecture
+
+The system uses a decoupled client-server architecture with multi-tenant data isolation:
+
+* **Frontend:** React 18, Vite v5, Framer Motion, Radix UI primitives, Lucide React icons, and Recharts visualization.
+* **Backend:** Python 3.10 Flask REST API, Flask-JWT-Extended, Flask-SocketIO, and ReportLab PDF rendering.
+* **Database & ORM:** SQLAlchemy with SQLite persistence, enforcing multi-tenant isolation via a `TenantScopedMixin`.
+* **Machine Learning Pipeline:** Scikit-Learn `Pipeline` wrapping `StandardScaler` and `VotingClassifier` (RandomForest + XGBoost), serialized with `joblib`.
+* **Real-Time Layer:** `Flask-SocketIO` broadcasting risk updates to authorized client sessions.
+
+---
+
+## Machine Learning
+
+### Feature Vector (12 Indicators)
+1. `attendance_rate` (Float, 0.0–1.0)
+2. `gpa` (Float, 0.0–10.0)
+3. `assignment_submission_rate` (Float, 0.0–1.0)
+4. `lms_login_frequency` (Integer, logins/week)
+5. `library_visits` (Integer, visits/month)
+6. `socioeconomic_score` (Float, 1.0–10.0)
+7. `scholarship_recipient` (Binary, 0 or 1)
+8. `family_income_bracket` (Integer, 1–5)
+9. `previous_backlogs` (Integer, count)
+10. `distance_from_college` (Float, km)
+11. `extracurricular_participation` (Binary, 0 or 1)
+12. `mental_health_score` (Float, 1.0–10.0)
+
+### Ensemble & Evaluation Methodology
+* **Algorithm:** Soft-Voting Ensemble (0.5 RandomForest + 0.5 XGBoost Classifier).
+* **Validation Methodology:** Pipeline-isolated 5-Fold Stratified Cross-Validation (preprocessing fit strictly inside each fold).
+* **Verified Performance Metrics:**
+  * **5-Fold Stratified CV Macro F1:** `82.32% ± 2.68%`
+  * **Test Accuracy:** `87.10%`
+  * **Test Macro F1:** `79.49%`
+  * **Test Weighted F1:** `86.80%`
+
+### Explainability & What-If Inference
+* **SHAP:** Uses independent `TreeExplainer` instances for XGBoost (raw log-odds margin space) and RandomForest (probability space), verifying native additivity per model before combining attributions for display.
+* **What-If Studio:** Executes true model re-inference on backend endpoint `/api/predict/what-if` upon slider adjustment.
+
+---
+
+## Intervention System
+
+Support recommendations are assigned through a **transparent rule-based prioritization engine** informed by student metrics and SHAP feature attributions:
+
+* Rules match specific risk drivers (e.g., low attendance triggers an *Attendance Recovery Plan*).
+* SHAP feature impact magnitudes dynamically adjust priority scores (`HIGH`, `MEDIUM`, `LOW`).
+* **Note:** Interventions are selected by auditable deterministic business logic, **not** a second ML model.
+* **Outcome Tracking:** Resolved interventions track observed risk probability changes before and after completion without asserting causality.
+
+---
+
+## Security & Multi-Tenancy
+
+* **Authentication:** Stateless HMAC-SHA256 JWT tokens via `Flask-JWT-Extended`.
+* **Role-Based Access Control (RBAC):**
+  * `super_admin`: Global cross-institution visibility.
+  * `admin` / `teacher`: Scoped strictly to their own institution (`institution_id`).
+  * `student`: Restricted strictly to their own record (`linked_student_id`).
+* **Multi-Tenant Scoping:** ORM-level event listeners automatically filter database queries by `institution_id`.
+* **IDOR Protection:** All direct record access endpoints verify caller institution membership before returning data.
+
+---
+
+## Current Limitations
+
+1. **Synthetic Training Baseline:** The current prototype demonstrates pipeline logic using a controlled synthetic dataset engineered with non-linear interaction terms. Production deployment requires fitting on an institution's historical student records.
+2. **Trajectory Simulation:** The 7-week cohort trend endpoint (`/api/analytics/trend`) generates a model-derived simulation from current database baseline counts, rather than historical longitudinal telemetry.
+3. **SHAP Output Space Heterogeneity:** Feature attributions aggregate matching soft-voting weights across XGBoost (margin space) and RandomForest (probability space) for directional guidance, rather than representing an exact linear probability decomposition.
+
+---
+
+## Project Structure
+
+```
+eduguard-sih-2026/
+├── backend/
+│   ├── app.py                      # Flask REST API, SocketIO gateway, route handlers
+│   ├── database.py                 # SQLAlchemy engine, session maker, TenantScopedMixin
+│   ├── seed.py                     # Synthetic dataset generator & DB seeder
+│   ├── health_check.py             # System verification script
+│   ├── requirements.txt            # Python dependencies
+│   ├── model/
+│   │   ├── train.py                # Pipeline-isolated 5-fold CV & model trainer
+│   │   ├── predict.py              # ML inference service & SHAP explainer engine
+│   │   ├── synthetic_data.py       # Controlled synthetic dataset generator
+│   │   └── registry.py             # Model version registry & checkpoint manager
+│   ├── models/                     # SQLAlchemy ORM models & serialized .pkl artifacts
+│   ├── services/                   # Email & PDF generation services
+│   ├── tasks/                      # Background batch prediction tasks
+│   └── tests/                      # Automated test suite (pytest)
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx                 # Main application router & context providers
+│   │   ├── components/             # Reusable UI components & modals
+│   │   ├── context/                # Authentication & session context
+│   │   ├── pages/                  # Landing, Admin, Teacher, Student, Prediction pages
+│   │   └── styles/                 # Design tokens & global CSS
+│   ├── package.json
+│   └── vite.config.js
+├── deploy/                         # Docker & Nginx configuration files
+├── docker-compose.yml              # Container orchestration specification
+├── eduguard_pitch_presentation.html# Hackathon presentation deck
+└── README.md                       # Repository documentation
+```
+
+---
+
+## Setup & Installation
 
 ### Prerequisites
-* **Node.js:** v18.0.0 or higher ([Download Node.js](https://nodejs.org/))
-* **Python:** v3.10 or higher ([Download Python](https://www.python.org/))
-* **Package Managers:** `npm` (bundled with Node) & `pip` (bundled with Python)
-
----
+* **Node.js:** v18.0 or higher
+* **Python:** v3.10 or higher
 
 ### Step 1: Clone Repository
 ```bash
-git clone <YOUR_REPOSITORY_URL>
-cd "sih final"
+git clone https://github.com/VAnsh1107/eduguard-sih-2026.git
+cd eduguard-sih-2026
 ```
 
----
+### Step 2: Backend Setup
+```bash
+cd backend
+python -m venv venv
 
-### Step 2: Backend Setup & Launch
+# Activate virtual environment
+# Windows (PowerShell):
+.\venv\Scripts\Activate.ps1
+# macOS/Linux:
+source venv/bin/activate
 
-1. Navigate to the `backend/` directory:
-   ```bash
-   cd backend
-   ```
+pip install -r requirements.txt
+python app.py
+```
+*Backend runs on `http://localhost:5000`.*
 
-2. Create and activate a Python virtual environment:
-   * **Windows (PowerShell):**
-     ```powershell
-     python -m venv venv
-     .\venv\Scripts\Activate.ps1
-     ```
-   * **macOS / Linux:**
-     ```bash
-     python3 -m venv venv
-     source venv/bin/activate
-     ```
-
-3. Install required Python packages:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Train the ML Ensemble Model & Seed Dataset (First time only):
-   ```bash
-   python model/train.py
-   ```
-
-5. Start the Flask & WebSocket Server:
-   ```bash
-   python app.py
-   ```
-   * *Backend will start live at:* `http://localhost:5000`
+### Step 3: Frontend Setup
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
+*Frontend runs on `http://localhost:5173`.*
 
 ---
 
-### Step 3: Frontend Setup & Launch
+## Demo Access Credentials
 
-1. Open a new terminal and navigate to `frontend/`:
-   ```bash
-   cd frontend
-   ```
+The local database is pre-seeded with test accounts:
 
-2. Install Node dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-   * *Frontend will start live at:* `http://localhost:5173`
-
----
-
-## 🔑 Demo Access Credentials
-
-The database comes pre-seeded with 5,000 synthetic student profiles and three pre-configured role accounts:
-
-| Role | Email | Password | Access Portal |
+| Role | Email | Password | Portal URL |
 |---|---|---|---|
-| **Administrator / Dean** | `admin@edu.local` | `changeme` | `http://localhost:5173/admin` |
-| **Teacher / Academic Mentor** | `teacher@edu.local` | `changeme` | `http://localhost:5173/teacher` |
+| **Admin / Dean** | `admin@edu.local` | `changeme` | `http://localhost:5173/admin` |
+| **Teacher / Mentor** | `teacher@edu.local` | `changeme` | `http://localhost:5173/teacher` |
 | **Student** | `student@edu.local` | `changeme` | `http://localhost:5173/student` |
-| **ML Inference Studio** | *(Teacher/Admin)* | — | `http://localhost:5173/predict` |
 
 ---
 
-## 📊 5. Current Implementation Status
+## Verification & Testing
 
-| Milestone / Component | Implementation Status | Verification Details |
-|---|---|---|
-| **Authentication & Role Guards** | ✅ **100% Complete** | JWT auth with Admin, Teacher, Student routing |
-| **ML Inference Engine** | ✅ **100% Complete** | 12 features → RF+XGBoost Voting Ensemble (87.1% Test Acc, 5-Fold CV Macro F1: 82.32%) |
-| **SHAP Explainability** | ✅ **100% Complete** | TreeExplainer attribution values on all predictions |
-| **Counterfactual What-If Studio** | ✅ **100% Complete** | Dynamic recovery simulation sliders |
-| **Admin Analytics & Telemetry** | ✅ **100% Complete** | 7-Week Risk Trajectory Simulation & live retrain terminal |
-| **Teacher Directory & Filters** | ✅ **100% Complete** | Live search, Sem 1-8 filter, Dept filter, Radar sheet |
-| **Student Wellbeing & Goals** | ✅ **100% Complete** | 5-D weekly wellbeing test & custom target streak rings |
-| **ReportLab PDF Engine** | ✅ **100% Complete** | Instant in-app evaluation brief preview & PDF export |
-| **Real-Time WebSocket Gateway** | ✅ **100% Complete** | Bi-directional risk update notifications |
-| **Automated End-to-End Audit** | ✅ **27 / 27 Tests Passed** | Automated test suite passed with zero errors |
-| **Production Build** | ✅ **Clean Compilation** | Vite production build passing in 6.82s |
-
----
-
-## 👥 6. Adding Hackathon Collaborator Access
-
-To provide collaborator access to the evaluation team:
-
-1. Open your repository on GitHub: `https://github.com/<YOUR_USERNAME>/<REPO_NAME>`
-2. Click on the **Settings** tab (gear icon) in the repository menu bar.
-3. In the left sidebar, click on **Collaborators** (under the *Access* section).
-4. Click the green **Add people** button.
-5. In the search box, enter the Hackathon ID: **`Hackathon-LDRP`**
-   * Link: [https://github.com/Hackathon-LDRP](https://github.com/Hackathon-LDRP)
-6. Select the account and click **Add Hackathon-LDRP to this repository**.
-
----
-
-## 📁 7. Project Directory Structure
-
+### Backend Test Suite
+Run the 27-test automated test suite:
+```bash
+cd backend
+pytest
 ```
-sih-final/
-├── backend/
-│   ├── app.py                      # Flask REST API + WebSocket Server
-│   ├── requirements.txt            # Python dependencies
-│   ├── socketio_instance.py        # Shared WebSocket instance
-│   ├── model/
-│   │   ├── train.py                # Dataset generator & Voting Ensemble training
-│   │   ├── predict.py              # Real-time ML inference & SHAP engine
-│   │   └── registry.py             # Model versioning & checkpoint manager
-│   ├── models/                     # Serialized .joblib model artifacts & metadata
-│   └── instance/
-│       └── eduguard.db             # Persistent SQLite database (5,000 students)
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx                 # App routing & context provider
-│   │   ├── context/
-│   │   │   └── AuthContext.jsx     # JWT authentication state management
-│   │   ├── hooks/
-│   │   │   └── useSocket.js        # WebSocket subscription hook
-│   │   ├── styles/
-│   │   │   ├── tokens.css          # Design tokens & color palette
-│   │   │   └── base.css            # Base styles & typography
-│   │   ├── components/
-│   │   │   ├── AppShell.jsx        # Navigation shell, Spotlight Search, Alert Center
-│   │   │   ├── StudentProfileSheet.jsx # Radar profile & PDF preview modal
-│   │   │   └── ui/                 # Reusable UI primitives (Buttons, Badges, KPI cards)
-│   │   └── pages/
-│   │       ├── Landing.jsx         # Apple Light Mode landing page with live telemetry
-│   │       ├── Login.jsx           # Elevated login card with 1-click demo logins
-│   │       ├── AdminDashboard.jsx  # 7-Week telemetry, Retrain terminal, Alert config
-│   │       ├── TeacherDashboard.jsx# Student directory with multi-filter matrix
-│   │       ├── StudentDashboard.jsx# Performance profile, Goals, 5-D wellbeing check-in
-│   │       └── PredictionForm.jsx  # ML Predictor & Counterfactual What-If Studio
-│   ├── package.json
-│   └── vite.config.js
-├── presentation_assets/            # Keynote slide presentation assets
-├── eduguard_pitch_presentation.html# Interactive 5-slide presentation HTML
-└── README.md                       # Comprehensive project documentation
+*Result: 27 / 27 tests passing.*
+
+### Frontend Production Build
+Compile the production bundle:
+```bash
+cd frontend
+npm run build
 ```
+*Result: Vite production build completes with 0 errors in ~6.8s.*
 
 ---
 
-<div align="center">
-  <b>Built for Smart India Hackathon (SIH 2026)</b><br>
-  <i>Empowering educators with proactive retention intelligence.</i>
-</div>
+## License
+
+This project is licensed under the [MIT License](LICENSE).

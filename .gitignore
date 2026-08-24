@@ -1,12 +1,36 @@
+# Environment & Secrets
 .env
+.env.*
 backend/.env
-backend/__pycache__/
-backend/**/__pycache__/
-backend/data/*.db
-backend/model/versions/*.pkl
-frontend/node_modules/
-frontend/dist/
+
+# Python / Pytest
+__pycache__/
+**/__pycache__/
 *.pyc
 *.pyo
+*.pyd
+.pytest_cache/
+
+# Node / Build Outputs
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+build/
+coverage/
+
+# IDE & OS Metadata
+.vscode/
+.idea/
+*.swp
+*.swo
 .DS_Store
 Thumbs.db
+
+# Logs & Temporary Files
+*.log
+*.tmp
+*.bak
+backend/data/*.db
+backend/model/versions/*.pkl
+

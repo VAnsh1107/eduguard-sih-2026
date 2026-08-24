@@ -1457,27 +1457,52 @@ def assign_intervention(student_id: str):
     itype = data.get("type")
     title = data.get("title")
     notes = data.get("notes", "")
+    priority = data.get("priority")
+    reason = data.get("reason")
+    target_metric = data.get("target_metric")
+    target_value = data.get("target_value")
+    review_date_str = data.get("review_date")
 
     if not itype or not title:
         return jsonify({"error": "Missing required fields: type and title."}), 400
+
+    review_date = None
+    if review_date_str:
+        try:
+            review_date = datetime.fromisoformat(review_date_str)
+        except (ValueError, TypeError):
+            return jsonify({"error": "Invalid review_date format. Use ISO 8601."}), 400
+
+    inst_id = current_user.get("institution_id")
 
     with get_db() as db:
         s = db.query(Student).filter(Student.student_id == student_id).first()
         if not s:
             return jsonify({"error": "Student not found"}), 404
 
+        # Tenant isolation: teacher/admin can only assign interventions to students in their institution
+        if current_user["role"] != "super_admin" and inst_id and s.institution_id != inst_id:
+            return jsonify({"error": "Forbidden. Student does not belong to your institution."}), 403
+
         u = db.query(User).filter(User.email == current_user["email"]).first()
         if not u:
             return jsonify({"error": "User not found"}), 404
 
         intervention = Intervention(
+            institution_id=inst_id,       # Explicitly set — do not rely on default=1
             student_id=student_id,
             assigned_by=u.id,
             type=itype,
             title=title,
             status="pending",
             notes=notes,
-            assigned_at=datetime.utcnow()
+            assigned_at=datetime.utcnow(),
+            priority=priority,
+            reason=reason,
+            target_metric=target_metric,
+            target_value=float(target_value) if target_value is not None else None,
+            review_date=review_date,
+            risk_prob_at_assignment=float(s.risk_probability) if s.risk_probability is not None else None,
         )
         db.add(intervention)
         db.commit()
@@ -1495,8 +1520,21 @@ def get_student_interventions(student_id: str):
     if current_user["role"] not in ["admin", "teacher", "student"]:
         return jsonify({"error": "Unauthorized"}), 403
 
+    inst_id = current_user.get("institution_id")
+
     with get_db() as db:
-        results = db.query(Intervention).filter(Intervention.student_id == student_id).order_by(Intervention.assigned_at.desc()).all()
+        # Verify student exists and belongs to caller's institution (defensive — not relying solely on ORM event)
+        if current_user["role"] != "super_admin" and inst_id:
+            student_check = db.query(Student).filter(
+                Student.student_id == student_id,
+                Student.institution_id == inst_id,
+            ).first()
+            if not student_check:
+                return jsonify({"error": "Student not found or does not belong to your institution."}), 404
+
+        results = db.query(Intervention).filter(
+            Intervention.student_id == student_id
+        ).order_by(Intervention.assigned_at.desc()).all()
         return jsonify({"student_id": student_id, "interventions": [i.to_dict() for i in results]})
 
 
@@ -1509,6 +1547,9 @@ def update_intervention(intervention_id: int):
     data = request.get_json(force=True)
     status = data.get("status")
     notes = data.get("notes")
+    outcome = data.get("outcome")
+
+    inst_id = current_user.get("institution_id")
 
     with get_db() as db:
         intervention = db.query(Intervention).filter(Intervention.id == intervention_id).first()
@@ -1518,6 +1559,11 @@ def update_intervention(intervention_id: int):
         if current_user["role"] == "student":
             if intervention.student_id != current_user["linked_student_id"]:
                 return jsonify({"error": "Forbidden"}), 403
+        elif current_user["role"] != "super_admin":
+            # Teacher/admin: verify the intervention's student belongs to their institution
+            student = db.query(Student).filter(Student.student_id == intervention.student_id).first()
+            if not student or (inst_id and student.institution_id != inst_id):
+                return jsonify({"error": "Forbidden. Intervention does not belong to your institution."}), 403
 
         if status:
             if status not in ["pending", "active", "resolved"]:
@@ -1530,9 +1576,274 @@ def update_intervention(intervention_id: int):
 
         if notes is not None:
             intervention.notes = notes
+        if outcome is not None:
+            intervention.outcome = outcome
 
         db.commit()
         return jsonify({"success": True, "intervention": intervention.to_dict()})
+
+
+@app.route("/api/students/<student_id>/interventions/recommendations", methods=["GET"])
+@jwt_required()
+def get_intervention_recommendations(student_id: str):
+    """
+    Deterministic transparent prioritization of intervention recommendations.
+    Inputs: current student state, latest prediction factors, active interventions.
+    Does NOT use a second ML model — uses auditable rules on SHAP feature attributions.
+    """
+    import json
+    current_user = json.loads(get_jwt_identity())
+    if current_user["role"] not in ["admin", "teacher"]:
+        return jsonify({"error": "Forbidden. Requires admin or teacher role."}), 403
+
+    inst_id = current_user.get("institution_id")
+
+    with get_db() as db:
+        s = db.query(Student).filter(Student.student_id == student_id).first()
+        if not s:
+            return jsonify({"error": "Student not found"}), 404
+        if current_user["role"] != "super_admin" and inst_id and s.institution_id != inst_id:
+            return jsonify({"error": "Forbidden. Student does not belong to your institution."}), 403
+
+        # Fetch latest SHAP risk snapshot
+        latest_snap = db.query(RiskSnapshot).filter(
+            RiskSnapshot.student_id == student_id
+        ).order_by(RiskSnapshot.timestamp.desc()).first()
+
+        # Fetch active interventions (to avoid re-recommending covered areas)
+        active = db.query(Intervention).filter(
+            Intervention.student_id == student_id,
+            Intervention.status.in_(["pending", "active"]),
+        ).all()
+        active_types = {i.type for i in active}
+
+        top_factors = (latest_snap.top_factors or []) if latest_snap else []
+
+        # Deterministic recommendation rules tied to risk drivers
+        _RULES = [
+            {
+                "feature": "attendance_rate",
+                "threshold": 0.70,
+                "compare": "lt",
+                "type": "Attendance & Engagement",
+                "title": "Attendance Recovery Plan",
+                "reason_template": "Attendance ({val:.0%}) is below threshold and is a leading risk driver.",
+                "target_metric": "attendance_rate",
+                "target_value": 0.75,
+                "base_priority": 10,
+            },
+            {
+                "feature": "gpa",
+                "threshold": 4.5,
+                "compare": "lt",
+                "type": "Academic Support",
+                "title": "Academic Tutoring & Peer Study Groups",
+                "reason_template": "GPA ({val:.1f}) is declining and is a significant risk factor.",
+                "target_metric": "gpa",
+                "target_value": 5.0,
+                "base_priority": 8,
+            },
+            {
+                "feature": "mental_wellbeing_score",
+                "threshold": 4.5,
+                "compare": "lt",
+                "type": "Mental Health & Wellbeing",
+                "title": "Refer to Student Counseling & Wellness Centre",
+                "reason_template": "Wellbeing score ({val:.1f}/10) indicates emotional distress.",
+                "target_metric": "mental_wellbeing_score",
+                "target_value": 5.0,
+                "base_priority": 8,
+            },
+            {
+                "feature": "assignment_submission_rate",
+                "threshold": 0.70,
+                "compare": "lt",
+                "type": "Academic Support",
+                "title": "Assignment Tracking & Submission Reminder System",
+                "reason_template": "Assignment submission rate ({val:.0%}) is low.",
+                "target_metric": "assignment_submission_rate",
+                "target_value": 0.75,
+                "base_priority": 6,
+            },
+            {
+                "feature": "lms_logins_week",
+                "threshold": 3,
+                "compare": "lt",
+                "type": "Digital Engagement",
+                "title": "Digital Learning Re-engagement",
+                "reason_template": "LMS logins/week ({val:.0f}) shows low digital engagement.",
+                "target_metric": "lms_logins_week",
+                "target_value": 4,
+                "base_priority": 5,
+            },
+            {
+                "feature": "previous_backlogs",
+                "threshold": 2,
+                "compare": "gt",
+                "type": "Academic Support",
+                "title": "Backlog Clearance Programme",
+                "reason_template": "Student has {val:.0f} unresolved backlog(s).",
+                "target_metric": "previous_backlogs",
+                "target_value": 0,
+                "base_priority": 7,
+            },
+        ]
+
+        # Build SHAP impact lookup (feature → impact) to boost priority by risk driver magnitude
+        shap_impacts = {}
+        for f in top_factors:
+            if isinstance(f, dict):
+                feat = f.get("feature", "")
+                impact = abs(f.get("impact", 0.0))
+                if impact > 0:
+                    shap_impacts[feat] = impact
+
+        features_map = s.to_features_dict()
+        recommendations = []
+        for rule in _RULES:
+            feat = rule["feature"]
+            val = features_map.get(feat, None)
+            if val is None:
+                continue
+            triggered = (rule["compare"] == "lt" and val < rule["threshold"]) or \
+                        (rule["compare"] == "gt" and val > rule["threshold"])
+            if not triggered:
+                continue
+            if rule["type"] in active_types:
+                continue  # already has active intervention of this type
+
+            shap_boost = shap_impacts.get(feat, 0.0) * 20  # weight by driver magnitude
+            score = rule["base_priority"] + shap_boost
+            priority_label = "HIGH" if score >= 12 else "MEDIUM" if score >= 7 else "LOW"
+            reason = rule["reason_template"].format(val=val)
+            recommendations.append({
+                "type": rule["type"],
+                "title": rule["title"],
+                "priority": priority_label,
+                "score": round(score, 2),
+                "reason": reason,
+                "target_metric": rule["target_metric"],
+                "target_value": rule["target_value"],
+            })
+
+        # Sort descending by score
+        recommendations.sort(key=lambda x: x["score"], reverse=True)
+        ranked = [dict(rank=i + 1, **r) for i, r in enumerate(recommendations[:5])]
+
+        return jsonify({
+            "student_id": student_id,
+            "risk_level": s.risk_label,
+            "risk_probability": s.risk_probability,
+            "methodology": "Deterministic rule-based prioritization using current student metrics and SHAP feature attribution weights. Not a second ML model.",
+            "recommendations": ranked,
+        })
+
+
+@app.route("/api/interventions/<int:intervention_id>/outcome", methods=["GET"])
+@jwt_required()
+def get_intervention_outcome(intervention_id: int):
+    """
+    BEFORE → AFTER comparison for a resolved intervention.
+    Uses RiskSnapshot history before and after resolution.
+    IMPORTANT: Does not imply causation. All changes labeled as 'observed'.
+    """
+    import json
+    current_user = json.loads(get_jwt_identity())
+    if current_user["role"] not in ["admin", "teacher", "student"]:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    inst_id = current_user.get("institution_id")
+
+    with get_db() as db:
+        intervention = db.query(Intervention).filter(Intervention.id == intervention_id).first()
+        if not intervention:
+            return jsonify({"error": "Intervention not found"}), 404
+
+        # Authorization: students can only view their own; teachers/admins restricted to their institution
+        if current_user["role"] == "student":
+            if intervention.student_id != current_user.get("linked_student_id"):
+                return jsonify({"error": "Forbidden"}), 403
+        elif current_user["role"] != "super_admin" and inst_id:
+            student = db.query(Student).filter(Student.student_id == intervention.student_id).first()
+            if not student or student.institution_id != inst_id:
+                return jsonify({"error": "Forbidden. Intervention does not belong to your institution."}), 403
+
+        if intervention.status != "resolved" or not intervention.resolved_at:
+            return jsonify({
+                "intervention_id": intervention_id,
+                "status": intervention.status,
+                "outcome_available": False,
+                "reason": "Outcome data is only available after an intervention is resolved.",
+            }), 200
+
+        sid = intervention.student_id
+        assigned_at = intervention.assigned_at
+        resolved_at = intervention.resolved_at
+
+        # Snapshot just before assignment (closest before assigned_at)
+        snap_before = db.query(RiskSnapshot).filter(
+            RiskSnapshot.student_id == sid,
+            RiskSnapshot.timestamp <= assigned_at,
+        ).order_by(RiskSnapshot.timestamp.desc()).first()
+
+        # Snapshot just after resolution (closest after resolved_at)
+        snap_after = db.query(RiskSnapshot).filter(
+            RiskSnapshot.student_id == sid,
+            RiskSnapshot.timestamp >= resolved_at,
+        ).order_by(RiskSnapshot.timestamp.asc()).first()
+
+        # Fall back to risk_prob_at_assignment stored on the record itself
+        prob_before = intervention.risk_prob_at_assignment
+        label_before = None
+        if snap_before:
+            prob_before = prob_before or snap_before.risk_probability
+            label_before = snap_before.risk_label
+
+        prob_after = None
+        label_after = None
+        if snap_after:
+            prob_after = snap_after.risk_probability
+            label_after = snap_after.risk_label
+        else:
+            # Use current student record as approximation
+            student = db.query(Student).filter(Student.student_id == sid).first()
+            if student:
+                prob_after = student.risk_probability
+                label_after = student.risk_label
+
+        outcome_observed = "unknown"
+        prob_delta = None
+        if prob_before is not None and prob_after is not None:
+            prob_delta = round(prob_after - prob_before, 1)
+            if prob_delta <= -5.0:
+                outcome_observed = "improved"
+            elif prob_delta >= 5.0:
+                outcome_observed = "declined"
+            else:
+                outcome_observed = "unchanged"
+
+        return jsonify({
+            "intervention_id": intervention_id,
+            "student_id": sid,
+            "type": intervention.type,
+            "title": intervention.title,
+            "assigned_at": assigned_at.isoformat(),
+            "resolved_at": resolved_at.isoformat(),
+            "outcome_available": True,
+            "outcome_observed": outcome_observed,
+            "outcome_note": "Observed changes after intervention — no causal relationship implied.",
+            "before": {
+                "risk_probability": prob_before,
+                "risk_label": label_before,
+                "snapshot_timestamp": snap_before.timestamp.isoformat() if snap_before else None,
+            },
+            "after": {
+                "risk_probability": prob_after,
+                "risk_label": label_after,
+                "snapshot_timestamp": snap_after.timestamp.isoformat() if snap_after else None,
+            },
+            "probability_delta": prob_delta,
+        })
 
 
 @app.route("/api/interventions/summary", methods=["GET"])

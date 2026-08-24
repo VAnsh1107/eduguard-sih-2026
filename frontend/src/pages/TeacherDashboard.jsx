@@ -568,7 +568,10 @@ export default function TeacherDashboard() {
                         <RiskBadge level={s.risk_label} />
                       </td>
                       <td style={{ padding: '8px 18px' }}>
-                        <Sparkline data={s.risk_history || s.recent_risk_probs || [20, 30, 25, 40, 35, 50, 45]} />
+                        {(s.risk_history || s.recent_risk_probs)
+                          ? <Sparkline data={s.risk_history || s.recent_risk_probs} />
+                          : <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>—</span>}
+
                       </td>
                       <td style={{ padding: '8px 18px', textAlign: 'right' }} onClick={e => e.stopPropagation()}>
                         <DropdownMenu.Root>

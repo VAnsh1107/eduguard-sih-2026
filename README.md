@@ -165,7 +165,7 @@ The database comes pre-seeded with 5,000 synthetic student profiles and three pr
 | Milestone / Component | Implementation Status | Verification Details |
 |---|---|---|
 | **Authentication & Role Guards** | ✅ **100% Complete** | JWT auth with Admin, Teacher, Student routing |
-| **ML Inference Engine** | ✅ **100% Complete** | 12 features → RF+XGBoost Voting Ensemble (92.4% Acc) |
+| **ML Inference Engine** | ✅ **100% Complete** | 12 features → RF+XGBoost Voting Ensemble (87.1% Test Acc, 5-Fold CV Macro F1: 82.32%) |
 | **SHAP Explainability** | ✅ **100% Complete** | TreeExplainer attribution values on all predictions |
 | **Counterfactual What-If Studio** | ✅ **100% Complete** | Dynamic recovery simulation sliders |
 | **Admin Analytics & Telemetry** | ✅ **100% Complete** | 7-Week calibrated telemetry & live retrain terminal |

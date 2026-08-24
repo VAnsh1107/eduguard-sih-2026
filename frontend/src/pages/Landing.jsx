@@ -377,10 +377,10 @@ export default function Landing() {
 
           <div>
             <div style={{ fontSize: '38px', fontWeight: 800, color: 'var(--success)', letterSpacing: '-0.02em', lineHeight: 1 }}>
-              92.4%
+              87.1%
             </div>
             <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '8px' }}>
-              Ensemble Model Precision
+              Test Accuracy (5-Fold CV)
             </div>
           </div>
 

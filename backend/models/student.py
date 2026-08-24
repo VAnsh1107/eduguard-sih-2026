@@ -12,7 +12,7 @@ class Student(TenantScopedMixin, Base):
     year = Column(Integer, nullable=False)
     semester = Column(Integer, nullable=False)
     risk_label = Column(String, nullable=False)         # "Low", "Medium", "High"
-    risk_probability = Column(Float, nullable=False)    # Confidence level
+    risk_probability = Column(Float, nullable=False)    # Predicted risk probability (0–100)
 
     # 12 Feature Columns
     gpa = Column(Float, nullable=False)

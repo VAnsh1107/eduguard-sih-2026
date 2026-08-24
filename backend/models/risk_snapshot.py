@@ -9,7 +9,7 @@ class RiskSnapshot(TenantScopedMixin, Base):
     student_id = Column(String, ForeignKey("students.student_id", ondelete="CASCADE"), nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
     risk_label = Column(String, nullable=False)       # "Low", "Medium", "High"
-    risk_probability = Column(Float, nullable=False)  # confidence percentage (0-100)
+    risk_probability = Column(Float, nullable=False)  # Predicted risk probability (0–100)
     top_factors = Column(JSON, nullable=True)         # Serialized SHAP factors list
     interventions = Column(JSON, nullable=True)       # Serialized intervention recommendations list
 

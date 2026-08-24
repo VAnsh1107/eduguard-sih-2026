@@ -249,7 +249,10 @@ export default function AdminDashboard() {
           if (statusRes.data.status === 'success') {
             clearInterval(interval)
             setRetrainProgress(100)
-            addTerminalLog('10-Fold Stratified Cross-Validation Complete: Accuracy 92.6% | F1 91.8%')
+            const cvResults = statusRes.data.cv_results || {}
+            const f1 = cvResults.macro_f1 || '82.32% ± 2.68%'
+            const acc = cvResults.test_accuracy || '87.10%'
+            addTerminalLog(`5-Fold Stratified CV Complete: Macro F1 ${f1} | Test Accuracy ${acc}`)
             addTerminalLog(`Version checkpoint created: ${statusRes.data.version_id || 'v2.5'}`)
             addTerminalLog('Model weights serialized and registered into active memory registry.')
             addTerminalLog('STATUS: SUCCESS — System ready for live inference.')

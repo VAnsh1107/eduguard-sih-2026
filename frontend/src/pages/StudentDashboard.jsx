@@ -62,7 +62,7 @@ function RiskGauge({ riskLevel, confidence }) {
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
       }}>
         <div style={{ fontSize: '26px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>{Math.round(percentage)}%</div>
-        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 600 }}>Confidence</div>
+        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 600 }}>Predicted Risk Probability</div>
       </div>
     </div>
   )
@@ -172,18 +172,21 @@ export default function StudentDashboard() {
   const s = detail || {}
   const pred = s.prediction || {}
   const riskLevel = pred.risk_level || s.risk_label || 'Low'
-  const confidence = pred.confidence || s.risk_probability || 95.0
+  // Use null rather than a fabricated number — show unavailable state if no data
+  const confidence = pred.risk_probability ?? pred.confidence ?? s.risk_probability ?? null
   const factors = pred.top_factors || []
 
   // Performance Profile Radar Data (0-100 normalized)
-  const radarData = [
-    { subject: 'GPA', A: Math.min(100, (s.gpa ? (s.gpa / 10) * 100 : 85)) },
-    { subject: 'Attendance', A: Math.min(100, s.attendance_rate ? s.attendance_rate * 100 : 92) },
-    { subject: 'Assignments', A: Math.min(100, s.assignment_submission_rate ? s.assignment_submission_rate * 100 : 90) },
-    { subject: 'LMS Activity', A: Math.min(100, s.lms_logins_week ? (s.lms_logins_week / 15) * 100 : 80) },
-    { subject: 'Wellbeing', A: Math.min(100, s.mental_wellbeing_score ? (s.mental_wellbeing_score / 10) * 100 : 85) },
-    { subject: 'Engagement', A: Math.min(100, s.extracurricular ? 100 : (s.socioeconomic_score || 0.8) * 100) },
-  ]
+  // Only render actual data — use null rather than fabricated fallbacks
+  const hasStudentData = s && Object.keys(s).length > 0
+  const radarData = hasStudentData ? [
+    { subject: 'GPA', A: s.gpa != null ? Math.min(100, (s.gpa / 10) * 100) : null },
+    { subject: 'Attendance', A: s.attendance_rate != null ? Math.min(100, s.attendance_rate * 100) : null },
+    { subject: 'Assignments', A: s.assignment_submission_rate != null ? Math.min(100, s.assignment_submission_rate * 100) : null },
+    { subject: 'LMS Activity', A: s.lms_logins_week != null ? Math.min(100, (s.lms_logins_week / 15) * 100) : null },
+    { subject: 'Wellbeing', A: s.mental_wellbeing_score != null ? Math.min(100, (s.mental_wellbeing_score / 10) * 100) : null },
+    { subject: 'Engagement', A: s.extracurricular != null ? (s.extracurricular ? 100 : 0) : null },
+  ].filter(d => d.A !== null) : []
 
   const riskColor = riskLevel === 'High' ? 'var(--danger)' : riskLevel === 'Medium' ? 'var(--warning)' : 'var(--success)'
   const riskExplanation = riskLevel === 'High'
@@ -208,11 +211,9 @@ export default function StudentDashboard() {
     score: c.overall_score || Math.round((c.stress_level + c.sleep_quality + c.motivation + c.social_support + c.physical_health) / 5)
   }))
 
-  const displayGoals = goals.length > 0 ? goals : [
-    { title: 'Maintain 85% Attendance', current_value: Math.round((s.attendance_rate || 0.88) * 100), target_value: 85, progress_pct: 95, suffix: '%' },
-    { title: 'Submit 100% Assignments', current_value: Math.round((s.assignment_submission_rate || 0.92) * 100), target_value: 100, progress_pct: 92, suffix: '%' },
-    { title: 'Weekly Check-in Streak', current_value: 4, target_value: 5, isStreak: true },
-  ]
+  // Only show actual goals from the database — no fabricated demo goals
+  const displayGoals = goals && goals.length > 0 ? goals : []
+
 
   return (
     <AppShell>
@@ -288,9 +289,15 @@ export default function StudentDashboard() {
               <span className="stamp-badge" style={{ borderColor: riskColor, color: riskColor, background: 'var(--surface-2)', fontSize: '13px' }}>
                 [ {riskLevel.toUpperCase()} RISK STANDING ]
               </span>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-xs)', backgroundColor: 'var(--surface-2)', color: 'var(--ink)', border: '1px solid var(--ink)' }}>
-                {Math.round(confidence)}% Precision
-              </span>
+              {confidence !== null ? (
+                <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-xs)', backgroundColor: 'var(--surface-2)', color: 'var(--ink)', border: '1px solid var(--ink)' }}>
+                  {Math.round(confidence)}% Risk Probability
+                </span>
+              ) : (
+                <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 500, padding: '2px 8px', borderRadius: 'var(--radius-xs)', backgroundColor: 'var(--surface-2)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                  Probability unavailable
+                </span>
+              )}
             </div>
             
             <p style={{ fontSize: '13.5px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 14px' }}>

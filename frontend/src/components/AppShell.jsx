@@ -112,7 +112,7 @@ export default function AppShell({ children }) {
     {
       id: 4,
       title: 'Model Registry Active',
-      desc: 'RandomForest + XGBoost ensemble v2.4 initialized with 92.4% accuracy.',
+      desc: 'RandomForest + XGBoost ensemble initialized. 5-Fold Stratified CV: Macro F1 82.32% ± 2.68% | Test Accuracy 87.10%.',
       time: '1d ago',
       unread: false,
       type: 'success',

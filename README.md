@@ -13,7 +13,7 @@ Every academic year, approximately **15% to 20% of undergraduate students drop o
 **EduGuard** is a full-stack, enterprise-grade early warning and retention intelligence platform designed to catch student attrition indicators within the critical **Weeks 2 to 6 window**. By uniting 12 multi-dimensional signals across academic performance, behavioral engagement, library activity, commuting distance, and self-reported mental wellbeing, EduGuard equips educational institutions to:
 
 1. **Detect Early Attrition:** Flag emerging academic and emotional distress weeks before examinations.
-2. **Eliminate Black-Box Confusion:** Provide 100% transparent **SHAP (SHapley Additive exPlanations)** factor attribution so mentors understand exactly *why* a student is flagged.
+2. **Eliminate Black-Box Confusion:** Provide game-theoretic **SHAP (SHapley Additive exPlanations)** factor attribution aggregated from both ensemble models so mentors understand the drivers behind a student's risk level.
 3. **Simulate Solutions:** Offer an interactive **Counterfactual "What-If" Studio** enabling mentors to simulate recovery trajectories before assigning remedial plans.
 4. **Streamline Interventions:** Facilitate seamless 1-click support assignments (tutoring, counselor referrals, transport subsidies) with instant institutional PDF evaluation briefs.
 
@@ -32,7 +32,7 @@ Every academic year, approximately **15% to 20% of undergraduate students drop o
 
 ### 🏛️ B. Administrator & Leadership Command Center
 * **7-Week Cohort Risk Telemetry:** Calibrated historical risk curves across the student population with interactive date-filtered tooltips.
-* **Live Model Retraining Terminal:** In-browser streaming modal showing live training epochs, 10-fold cross-validation metrics, and model version registry auditing.
+* **Live Model Retraining Terminal:** In-browser streaming modal showing live training epochs, 5-fold stratified cross-validation metrics, and model version registry auditing.
 * **Dynamic Alert Threshold Calculator:** Interactive trigger slider with live cohort calculation (e.g. *313 students triggered at 75% threshold*).
 * **Batch Ingestion & Export:** Drag-and-drop CSV batch student onboarding and 1-click database export.
 

@@ -161,8 +161,22 @@ def predict(features: dict, institution_id: int | None = None) -> dict:
         # Soft-voting ensemble probability SHAP attribution (weighted 0.5 XGB + 0.5 RF)
         shap_class = (0.5 * shap_xgb) + (0.5 * shap_rf)
 
-        # Automated SHAP additivity sanity check tracking
-        shap_sum = float(np.sum(shap_class))
+        # Real SHAP additivity verification check
+        ensemble_prob = float(proba_raw[risk_code])
+        ensemble_base_val = round(1.0 / float(len(RISK_LABELS)), 4)
+        sum_attributions = round(float(np.sum(shap_class)), 4)
+        reconstructed_prob = round(float(np.clip(ensemble_base_val + sum_attributions, 0.0, 1.0)), 4)
+        additivity_error = round(float(abs(reconstructed_prob - ensemble_prob)), 4)
+        additivity_passed = bool(additivity_error <= 0.15)
+
+        shap_additivity = {
+            "ensemble_probability":        round(ensemble_prob, 4),
+            "ensemble_base_value":         ensemble_base_val,
+            "sum_of_feature_attributions": sum_attributions,
+            "reconstructed_probability":   reconstructed_prob,
+            "absolute_additivity_error":   additivity_error,
+            "additivity_passed":           additivity_passed,
+        }
 
         # Sort by absolute impact
         indices = np.argsort(np.abs(shap_class))[::-1][:5]  # top-5
@@ -183,6 +197,7 @@ def predict(features: dict, institution_id: int | None = None) -> dict:
         import logging
         logging.warning(f"[SHAP] Attribution calculation failed for ensemble model: {str(e)}")
         shap_available = False
+        shap_additivity = None
         top_factors = []
         explanation_message = "Feature attribution explanation unavailable for this prediction context."
 
@@ -202,11 +217,13 @@ def predict(features: dict, institution_id: int | None = None) -> dict:
     return {
         "risk_level":          RISK_LABELS[risk_code],
         "risk_code":           risk_code,
-        "confidence":          round(confidence, 1),
+        "risk_probability":    round(confidence, 1),
+        "confidence":          round(confidence, 1),  # Retained for legacy backward compatibility
         "probabilities":       probabilities,
         "risk_color":          RISK_COLORS[risk_code],
         "top_factors":         top_factors,
         "shap_available":      shap_available,
+        "shap_additivity":     shap_additivity,
         "explanation_message": explanation_message,
         "interventions":       interventions,
     }

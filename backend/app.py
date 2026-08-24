@@ -1212,6 +1212,11 @@ def get_cohort_analytics():
             Intervention.student_id == Student.student_id,
         )
 
+        if current_user["role"] != "super_admin" and current_user.get("institution_id"):
+            inst_id = current_user["institution_id"]
+            base_query = base_query.filter(Student.institution_id == inst_id)
+            intervention_query = intervention_query.filter(Student.institution_id == inst_id)
+
         if department_filter:
             base_query = base_query.filter(Student.department == department_filter)
             intervention_query = intervention_query.filter(Student.department == department_filter)
@@ -1539,21 +1544,25 @@ def get_interventions_summary():
         return jsonify({"error": "Forbidden. Requires admin or teacher role."}), 403
 
     with get_db() as db:
-        total = db.query(Intervention).count()
-        pending = db.query(Intervention).filter(Intervention.status == "pending").count()
-        active = db.query(Intervention).filter(Intervention.status == "active").count()
-        resolved = db.query(Intervention).filter(Intervention.status == "resolved").count()
+        base_query = db.query(Intervention).join(Student, Intervention.student_id == Student.student_id)
+        if current_user["role"] != "super_admin" and current_user.get("institution_id"):
+            base_query = base_query.filter(Student.institution_id == current_user["institution_id"])
+
+        total = base_query.count()
+        pending = base_query.filter(Intervention.status == "pending").count()
+        active = base_query.filter(Intervention.status == "active").count()
+        resolved = base_query.filter(Intervention.status == "resolved").count()
 
         now = datetime.utcnow()
         start_of_month = datetime(now.year, now.month, 1)
-        resolved_this_month = db.query(Intervention)\
+        resolved_this_month = base_query\
                                 .filter(Intervention.status == "resolved")\
                                 .filter(Intervention.resolved_at >= start_of_month)\
                                 .count()
 
         type_summary = {}
-        type_counts = db.query(Intervention.type, func.count(Intervention.id))\
-                        .group_by(Intervention.type).all()
+        type_counts = base_query.with_entities(Intervention.type, func.count(Intervention.id))\
+                                .group_by(Intervention.type).all()
         for t, count in type_counts:
             type_summary[t] = count
 
@@ -1575,11 +1584,15 @@ def get_alert_config():
     if current_user["role"] not in ["admin", "teacher"]:
         return jsonify({"error": "Forbidden"}), 403
 
+    inst_id = current_user.get("institution_id")
     with get_db() as db:
-        config = db.query(AlertConfig).first()
+        query = db.query(AlertConfig)
+        if current_user["role"] != "super_admin" and inst_id:
+            query = query.filter(AlertConfig.institution_id == inst_id)
+        config = query.first()
         if not config:
-            # Fallback seeding
             config = AlertConfig(
+                institution_id=inst_id,
                 threshold_probability=75.0,
                 alert_on_escalation=True,
                 weekly_digest_enabled=True
@@ -1597,11 +1610,15 @@ def update_alert_config():
     if current_user["role"] != "admin":
         return jsonify({"error": "Forbidden. Requires admin role."}), 403
 
+    inst_id = current_user.get("institution_id")
     data = request.get_json(force=True)
     with get_db() as db:
-        config = db.query(AlertConfig).first()
+        query = db.query(AlertConfig)
+        if current_user["role"] != "super_admin" and inst_id:
+            query = query.filter(AlertConfig.institution_id == inst_id)
+        config = query.first()
         if not config:
-            config = AlertConfig()
+            config = AlertConfig(institution_id=inst_id)
             db.add(config)
 
         if "threshold_probability" in data:
@@ -1815,13 +1832,17 @@ def import_students():
                     "extracurricular_participation": extracurricular,
                     "mental_health_score": mental_wellbeing_score,
                 }
-                pred = ml_predict(features_dict)
+                inst_id = current_user.get("institution_id")
+                pred = ml_predict(features_dict, institution_id=inst_id)
                 risk_label = pred["risk_level"]
                 risk_probability = float(pred["confidence"])
 
-                existing = db.query(Student).filter(
+                existing_query = db.query(Student).filter(
                     (Student.email == email) | (Student.student_id == student_id)
-                ).first()
+                )
+                if current_user["role"] != "super_admin" and inst_id:
+                    existing_query = existing_query.filter(Student.institution_id == inst_id)
+                existing = existing_query.first()
 
                 if existing:
                     existing.student_id = student_id
@@ -1847,6 +1868,7 @@ def import_students():
                     updated += 1
                 else:
                     new_student = Student(
+                        institution_id=inst_id,
                         student_id=student_id,
                         name=name,
                         email=email,

@@ -10,7 +10,7 @@
 
 Every academic year, approximately **15% to 20% of undergraduate students drop out silently**. Traditional university Enterprise Resource Planning (ERP) systems operate reactively—noticing student disengagement only after midterm exams are failed, semester registrations lapse, or fees go unpaid. By then, remedial intervention is often too late.
 
-**EduGuard** is a full-stack, enterprise-grade early warning and retention intelligence platform designed to catch student attrition indicators within the critical **Weeks 2 to 6 window**. By uniting 12 multi-dimensional signals across academic performance, behavioral engagement, library activity, commuting distance, and self-reported mental wellbeing, EduGuard equips educational institutions to:
+**EduGuard** is a full-stack, institutional-grade early warning and retention intelligence platform designed to catch student attrition indicators within the critical **Weeks 2 to 6 window**. By uniting 12 multi-dimensional signals across academic performance, behavioral engagement, library activity, commuting distance, and self-reported mental wellbeing, EduGuard equips educational institutions to:
 
 1. **Detect Early Attrition:** Flag emerging academic and emotional distress weeks before examinations.
 2. **Eliminate Black-Box Confusion:** Provide game-theoretic **SHAP (SHapley Additive exPlanations)** factor attribution aggregated from both ensemble models so mentors understand the drivers behind a student's risk level.
@@ -24,14 +24,14 @@ Every academic year, approximately **15% to 20% of undergraduate students drop o
 ### 🧠 A. Machine Learning & Explainability Engine
 * **Voting Ensemble Classification:** Dual-pipeline combining **RandomForest** (for non-linear behavioral clustering) and **XGBoost** (for gradient boosting on weak engagement signals) evaluated via Pipeline-isolated **Stratified 5-Fold Cross-Validation (82.32% ± 2.68% F1-Macro, 87.10% Test Accuracy, 79.49% Test Macro F1)**.
 * **Soft-Voting SHAP Attribution:** Feature attributions aggregated from both ensemble members using matching soft-voting weights, with automated additivity sanity checks.
-* **Real ML Counterfactual "What-If" Studio:** Interactive sliders for attendance boosts and GPA improvement that execute true model-derived re-inference, returning exact probability deltas and class transition badges.
+* **Real ML Counterfactual "What-If" Studio:** Interactive sliders for attendance boosts and GPA improvement that execute true model-derived re-inference, returning model-derived probability deltas and class transitions.
 
 > [!NOTE]
 > **Scientific Methodology & Production Disclosure:**  
 > EduGuard's current prototype demonstrates the full predictive and intervention architecture using controlled synthetic data (engineered non-linear interaction terms with Sigmoid probability mapping). The production architecture is designed for institutional historical data, featuring versioned retraining, 5-fold cross-validation, and longitudinal outcome validation.
 
 ### 🏛️ B. Administrator & Leadership Command Center
-* **7-Week Cohort Risk Telemetry:** Calibrated historical risk curves across the student population with interactive date-filtered tooltips.
+* **7-Week Risk Trajectory Simulation:** Model-derived risk progression curves across the student population with interactive date-filtered tooltips.
 * **Live Model Retraining Terminal:** In-browser streaming modal showing live training epochs, 5-fold stratified cross-validation metrics, and model version registry auditing.
 * **Dynamic Alert Threshold Calculator:** Interactive trigger slider with live cohort calculation (e.g. *313 students triggered at 75% threshold*).
 * **Batch Ingestion & Export:** Drag-and-drop CSV batch student onboarding and 1-click database export.
@@ -168,7 +168,7 @@ The database comes pre-seeded with 5,000 synthetic student profiles and three pr
 | **ML Inference Engine** | ✅ **100% Complete** | 12 features → RF+XGBoost Voting Ensemble (87.1% Test Acc, 5-Fold CV Macro F1: 82.32%) |
 | **SHAP Explainability** | ✅ **100% Complete** | TreeExplainer attribution values on all predictions |
 | **Counterfactual What-If Studio** | ✅ **100% Complete** | Dynamic recovery simulation sliders |
-| **Admin Analytics & Telemetry** | ✅ **100% Complete** | 7-Week calibrated telemetry & live retrain terminal |
+| **Admin Analytics & Telemetry** | ✅ **100% Complete** | 7-Week Risk Trajectory Simulation & live retrain terminal |
 | **Teacher Directory & Filters** | ✅ **100% Complete** | Live search, Sem 1-8 filter, Dept filter, Radar sheet |
 | **Student Wellbeing & Goals** | ✅ **100% Complete** | 5-D weekly wellbeing test & custom target streak rings |
 | **ReportLab PDF Engine** | ✅ **100% Complete** | Instant in-app evaluation brief preview & PDF export |

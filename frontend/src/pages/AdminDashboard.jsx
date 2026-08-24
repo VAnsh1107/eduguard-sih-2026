@@ -659,8 +659,8 @@ export default function AdminDashboard() {
               <div style={{ backgroundColor: 'var(--surface)', border: '0.5px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: '24px', boxShadow: 'var(--shadow-card)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                   <div>
-                    <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Risk Telemetry Trend (Last 7 Weeks)</h3>
-                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>Weekly student risk distribution across active academic semester</p>
+                    <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>7-Week Risk Trajectory Simulation</h3>
+                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>Simulated model-derived risk progression across active academic semester</p>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--danger)', fontWeight: 600 }}>

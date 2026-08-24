@@ -210,8 +210,11 @@ def apply_institution_context():
             if isinstance(identity, str):
                 import json
                 identity = json.loads(identity)
+            role = identity.get("role")
             institution_id = identity.get("institution_id")
-            if institution_id is not None:
+            if role == "super_admin":
+                token_ctx = set_current_institution_id(None)
+            elif institution_id is not None:
                 token_ctx = set_current_institution_id(institution_id)
         except Exception:
             token_ctx = None
@@ -1268,10 +1271,10 @@ def get_cohort_analytics():
 @app.route("/api/analytics/trend", methods=["GET"])
 @jwt_required()
 def get_trend_analytics():
-    """Weekly risk trend analytics for the last N weeks."""
+    """7-Week Risk Trajectory Simulation: returns model-derived trajectory across recent weeks."""
     import json
     current_user = json.loads(get_jwt_identity())
-    if current_user["role"] not in ["admin", "teacher"]:
+    if current_user["role"] not in ["super_admin", "admin", "teacher"]:
         return jsonify({"error": "Unauthorized. Requires admin or teacher role."}), 403
 
     weeks = max(1, min(int(request.args.get("weeks", 7)), 52))
@@ -1325,6 +1328,8 @@ def get_trend_analytics():
 
         return jsonify({
             "weeks": weeks,
+            "trajectory_type": "7-Week Risk Trajectory Simulation",
+            "note": "Simulated risk trajectory derived deterministically from current cohort baseline counts.",
             "data": trend_data,
         })
 
@@ -1450,7 +1455,7 @@ def get_interventions():
 def assign_intervention(student_id: str):
     import json
     current_user = json.loads(get_jwt_identity())
-    if current_user["role"] not in ["admin", "teacher"]:
+    if current_user["role"] not in ["super_admin", "admin", "teacher"]:
         return jsonify({"error": "Forbidden. Requires admin or teacher role."}), 403
 
     data = request.get_json(force=True)
@@ -1488,8 +1493,11 @@ def assign_intervention(student_id: str):
         if not u:
             return jsonify({"error": "User not found"}), 404
 
+        # Explicitly stamp target student's institution_id
+        target_inst_id = s.institution_id
+
         intervention = Intervention(
-            institution_id=inst_id,       # Explicitly set — do not rely on default=1
+            institution_id=target_inst_id,
             student_id=student_id,
             assigned_by=u.id,
             type=itype,
@@ -1515,16 +1523,16 @@ def get_student_interventions(student_id: str):
     import json
     current_user = json.loads(get_jwt_identity())
 
-    if current_user["role"] == "student" and current_user["linked_student_id"] != student_id:
+    if current_user["role"] == "student" and current_user.get("linked_student_id") != student_id:
         return jsonify({"error": "Forbidden. You cannot view another student's interventions."}), 403
-    if current_user["role"] not in ["admin", "teacher", "student"]:
+    if current_user["role"] not in ["super_admin", "admin", "teacher", "student"]:
         return jsonify({"error": "Unauthorized"}), 403
 
     inst_id = current_user.get("institution_id")
 
     with get_db() as db:
-        # Verify student exists and belongs to caller's institution (defensive — not relying solely on ORM event)
-        if current_user["role"] != "super_admin" and inst_id:
+        # Verify student exists and belongs to caller's institution (unless super_admin or student self-check)
+        if current_user["role"] != "super_admin" and current_user["role"] != "student" and inst_id:
             student_check = db.query(Student).filter(
                 Student.student_id == student_id,
                 Student.institution_id == inst_id,
@@ -1544,6 +1552,9 @@ def update_intervention(intervention_id: int):
     import json
     current_user = json.loads(get_jwt_identity())
 
+    if current_user["role"] not in ["super_admin", "admin", "teacher", "student"]:
+        return jsonify({"error": "Unauthorized"}), 403
+
     data = request.get_json(force=True)
     status = data.get("status")
     notes = data.get("notes")
@@ -1557,7 +1568,7 @@ def update_intervention(intervention_id: int):
             return jsonify({"error": "Intervention not found"}), 404
 
         if current_user["role"] == "student":
-            if intervention.student_id != current_user["linked_student_id"]:
+            if intervention.student_id != current_user.get("linked_student_id"):
                 return jsonify({"error": "Forbidden"}), 403
         elif current_user["role"] != "super_admin":
             # Teacher/admin: verify the intervention's student belongs to their institution
@@ -1593,7 +1604,7 @@ def get_intervention_recommendations(student_id: str):
     """
     import json
     current_user = json.loads(get_jwt_identity())
-    if current_user["role"] not in ["admin", "teacher"]:
+    if current_user["role"] not in ["super_admin", "admin", "teacher"]:
         return jsonify({"error": "Forbidden. Requires admin or teacher role."}), 403
 
     inst_id = current_user.get("institution_id")
@@ -1749,7 +1760,7 @@ def get_intervention_outcome(intervention_id: int):
     """
     import json
     current_user = json.loads(get_jwt_identity())
-    if current_user["role"] not in ["admin", "teacher", "student"]:
+    if current_user["role"] not in ["super_admin", "admin", "teacher", "student"]:
         return jsonify({"error": "Unauthorized"}), 403
 
     inst_id = current_user.get("institution_id")

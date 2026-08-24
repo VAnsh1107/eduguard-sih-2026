@@ -199,6 +199,86 @@ def test_cross_tenant_intervention_patch_blocked(client, two_institution_setup):
     )
 
 
+def test_super_admin_intervention_access_global(client, two_institution_setup, super_token):
+    """super_admin can GET and POST interventions across any institution globally."""
+    from unittest.mock import patch
+
+    stu_a = two_institution_setup["student_ids"]["A"]
+    stu_b = two_institution_setup["student_ids"]["B"]
+
+    # super_admin gets interventions for student in Inst A
+    get_a = client.get(f"/api/students/{stu_a}/interventions", headers=_auth(super_token))
+    assert get_a.status_code == 200
+
+    # super_admin gets interventions for student in Inst B
+    get_b = client.get(f"/api/students/{stu_b}/interventions", headers=_auth(super_token))
+    assert get_b.status_code == 200
+
+    MOCK_PRED = {
+        "risk_level": "High", "confidence": 76.5, "risk_probability": 76.5,
+        "risk_code": 2, "probabilities": {"Low": 5.0, "Medium": 18.5, "High": 76.5},
+        "risk_color": "#EF4444", "top_factors": [], "interventions": [],
+    }
+
+    # super_admin posts intervention to student in Inst B
+    with patch("app.ml_predict", return_value=MOCK_PRED):
+        post_b = client.post(
+            f"/api/students/{stu_b}/interventions",
+            headers=_auth(super_token),
+            json={"type": "Academic Support", "title": "Super Admin Global Intervention"},
+        )
+    assert post_b.status_code == 201, f"Expected 201, got {post_b.status_code}: {post_b.get_json()}"
+    assert post_b.get_json()["intervention"]["student_id"] == stu_b
+
+
+def test_admin_teacher_tenant_restriction(client, two_institution_setup):
+    """admin/teacher role is restricted to their own institution and rejected for other institutions."""
+    token_b = two_institution_setup["tokens"]["teacher_b"]
+    stu_a = two_institution_setup["student_ids"]["A"]
+
+    resp = client.post(
+        f"/api/students/{stu_a}/interventions",
+        headers=_auth(token_b),
+        json={"type": "Academic Support", "title": "Unauthorized cross-tenant attempt"},
+    )
+    assert resp.status_code in [403, 404]
+
+
+def test_student_self_only_intervention_access(client):
+    """student role can access their own interventions, but is rejected with 403 for another student's record."""
+    from database import SessionLocal
+    from models.user import User
+    from models.student import Student
+    import app as _app_mod
+
+    flask_app = _app_mod.app
+
+    with flask_app.app_context():
+        db = SessionLocal()
+        try:
+            # Create a student user linked to STU1001
+            u1 = User(email="student1@test.local", role="student", linked_student_id="STU1001", institution_id=1)
+            u1.set_password("testpass")
+            db.add(u1)
+            db.commit()
+        finally:
+            db.close()
+
+    # Login as student1
+    resp_login = client.post("/api/auth/login", json={"email": "student1@test.local", "password": "testpass"})
+    token_student1 = resp_login.get_json()["access_token"]
+
+    # Student 1 tries to access their own interventions
+    own_resp = client.get("/api/students/STU1001/interventions", headers=_auth(token_student1))
+    assert own_resp.status_code == 200
+
+    # Student 1 tries to access STU9999's interventions
+    other_resp = client.get("/api/students/STU9999/interventions", headers=_auth(token_student1))
+    assert other_resp.status_code == 403
+    assert "Forbidden" in other_resp.get_json()["error"]
+
+
+
 def test_same_tenant_intervention_patch_allowed(client, two_institution_setup):
     """Teacher from Institution A CAN PATCH an intervention belonging to their student."""
     from unittest.mock import patch as _patch

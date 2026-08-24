@@ -171,22 +171,31 @@ export default function StudentDashboard() {
 
   const s = detail || {}
   const pred = s.prediction || {}
-  const riskLevel = pred.risk_level || s.risk_label || 'Low'
-  // Use null rather than a fabricated number — show unavailable state if no data
   const confidence = pred.risk_probability ?? pred.confidence ?? s.risk_probability ?? null
+  const riskLevel = confidence !== null
+    ? (confidence >= 70 ? 'High' : confidence >= 40 ? 'Medium' : 'Low')
+    : (pred.risk_level || s.risk_label || 'Low')
   const factors = pred.top_factors || []
 
   // Performance Profile Radar Data (0-100 normalized)
-  // Only render actual data — use null rather than fabricated fallbacks
-  const hasStudentData = s && Object.keys(s).length > 0
-  const radarData = hasStudentData ? [
-    { subject: 'GPA', A: s.gpa != null ? Math.min(100, (s.gpa / 10) * 100) : null },
-    { subject: 'Attendance', A: s.attendance_rate != null ? Math.min(100, s.attendance_rate * 100) : null },
-    { subject: 'Assignments', A: s.assignment_submission_rate != null ? Math.min(100, s.assignment_submission_rate * 100) : null },
-    { subject: 'LMS Activity', A: s.lms_logins_week != null ? Math.min(100, (s.lms_logins_week / 15) * 100) : null },
-    { subject: 'Wellbeing', A: s.mental_wellbeing_score != null ? Math.min(100, (s.mental_wellbeing_score / 10) * 100) : null },
-    { subject: 'Engagement', A: s.extracurricular != null ? (s.extracurricular ? 100 : 0) : null },
-  ].filter(d => d.A !== null) : []
+  const calcRadarScore = (val, maxVal = 1, isPct = false) => {
+    if (val == null) return 0
+    const num = Number(val)
+    if (isNaN(num)) return 0
+    if (isPct) {
+      return num > 1 ? Math.min(100, Math.round(num)) : Math.min(100, Math.round(num * 100))
+    }
+    return Math.min(100, Math.round((num / maxVal) * 100))
+  }
+
+  const radarData = [
+    { subject: 'GPA', A: calcRadarScore(s.gpa, 10), raw: s.gpa != null ? Number(s.gpa).toFixed(2) : 'N/A' },
+    { subject: 'Attendance', A: calcRadarScore(s.attendance_rate, 1, true), raw: `${calcRadarScore(s.attendance_rate, 1, true)}%` },
+    { subject: 'Assignments', A: calcRadarScore(s.assignment_submission_rate, 1, true), raw: `${calcRadarScore(s.assignment_submission_rate, 1, true)}%` },
+    { subject: 'LMS Activity', A: calcRadarScore(s.lms_login_frequency ?? s.lms_logins_week, 20), raw: `${s.lms_login_frequency ?? s.lms_logins_week ?? 0}/wk` },
+    { subject: 'Wellbeing', A: calcRadarScore(s.mental_health_score ?? s.mental_wellbeing_score, 10), raw: `${s.mental_health_score ?? s.mental_wellbeing_score ?? 0}/10` },
+    { subject: 'Engagement', A: calcRadarScore(s.extracurricular_participation ?? s.extracurricular, 1), raw: s.extracurricular_participation ? 'Active' : 'Basic' },
+  ]
 
   const riskColor = riskLevel === 'High' ? 'var(--danger)' : riskLevel === 'Medium' ? 'var(--warning)' : 'var(--success)'
   const riskExplanation = riskLevel === 'High'
@@ -206,14 +215,21 @@ export default function StudentDashboard() {
     { label: 'Health', value: latestCheckin.physical_health },
   ] : []
 
-  const checkinTrendData = (checkins || []).slice(0, 8).reverse().map(c => ({
-    week: formatWeekLabel(c.week_start),
-    score: c.overall_score || Math.round((c.stress_level + c.sleep_quality + c.motivation + c.social_support + c.physical_health) / 5)
+  const rawTrend = (checkins || []).slice(0, 8).reverse().map(c => ({
+    week: formatWeekLabel(c.week_start) || 'This Wk',
+    score: c.overall_score || Math.round(((c.stress_level || 5) + (c.sleep_quality || 5) + (c.motivation || 5) + (c.social_support || 5) + (c.physical_health || 5)) / 5)
   }))
+  const checkinTrendData = rawTrend.length === 1 ? [{ week: 'Baseline', score: rawTrend[0].score }, rawTrend[0]] : rawTrend
 
-  // Only show actual goals from the database — no fabricated demo goals
-  const displayGoals = goals && goals.length > 0 ? goals : []
-
+  // Deduplicate goals by type/title
+  const rawGoals = goals && goals.length > 0 ? goals : []
+  const seenGoalTypes = new Set()
+  const displayGoals = rawGoals.filter(g => {
+    const key = g.goal_type || g.title || g.label
+    if (seenGoalTypes.has(key)) return false
+    seenGoalTypes.add(key)
+    return true
+  })
 
   return (
     <AppShell>
@@ -256,23 +272,27 @@ export default function StudentDashboard() {
 
         {/* Header Greeting */}
         <div style={{ marginBottom: '28px' }}>
-          <div className="stamp-badge" style={{ borderColor: 'var(--ink)', color: 'var(--ink)', marginBottom: '4px' }}>
-            [ STUDENT ACADEMIC JOURNAL ]
+          <div style={{
+            fontSize: '11px', textTransform: 'uppercase', tracking: '0.08em', fontWeight: 700,
+            color: 'var(--accent)', backgroundColor: 'var(--accent-light)', display: 'inline-block',
+            padding: '3px 10px', borderRadius: '980px', marginBottom: '8px'
+          }}>
+            Student Academic Hub
           </div>
-          <h1 style={{ fontSize: '38px', fontFamily: 'var(--font-hand)', fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
+          <h1 style={{ fontSize: '32px', fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>
             Welcome back, {s.name || user?.name || 'Student'}.
           </h1>
-          <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', marginTop: '4px' }}>
-            // {s.department || 'Computer Science'} · Semester {s.semester || s.year || 2} · <span style={{ fontFamily: 'var(--font-mono)' }}>{studentId}</span>
+          <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            {s.department || 'Mechanical Eng.'} · Semester {s.semester || s.year || 2} · <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{studentId}</span>
           </div>
         </div>
 
         {/* RISK STATUS FEATURED CARD */}
         <div style={{
           backgroundColor: 'var(--surface)',
-          borderRadius: 'var(--radius-sm)',
-          boxShadow: '4px 4px 0px var(--ink)',
-          border: '2px solid var(--ink)',
+          borderRadius: 'var(--radius-xl)',
+          boxShadow: 'var(--shadow-card)',
+          border: '0.5px solid var(--border)',
           padding: '32px',
           marginBottom: '24px',
           display: 'flex',
@@ -286,32 +306,37 @@ export default function StudentDashboard() {
 
           <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span className="stamp-badge" style={{ borderColor: riskColor, color: riskColor, background: 'var(--surface-2)', fontSize: '13px' }}>
-                [ {riskLevel.toUpperCase()} RISK STANDING ]
+              <span style={{
+                fontSize: '12px', fontWeight: 700, padding: '4px 12px', borderRadius: '980px',
+                backgroundColor: riskLevel === 'High' ? 'var(--danger-light)' : riskLevel === 'Medium' ? 'var(--warning-light)' : 'var(--success-light)',
+                color: riskColor, textTransform: 'uppercase', letterSpacing: '0.04em'
+              }}>
+                {riskLevel} Risk Standing
               </span>
               {confidence !== null ? (
-                <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-xs)', backgroundColor: 'var(--surface-2)', color: 'var(--ink)', border: '1px solid var(--ink)' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '980px', backgroundColor: 'var(--surface-2)', color: 'var(--text-primary)', border: '0.5px solid var(--border)' }}>
                   {Math.round(confidence)}% Risk Probability
                 </span>
               ) : (
-                <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 500, padding: '2px 8px', borderRadius: 'var(--radius-xs)', backgroundColor: 'var(--surface-2)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '12px', fontWeight: 500, padding: '4px 10px', borderRadius: '980px', backgroundColor: 'var(--surface-2)', color: 'var(--text-secondary)' }}>
                   Probability unavailable
                 </span>
               )}
             </div>
             
-            <p style={{ fontSize: '13.5px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 14px' }}>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 16px' }}>
               {riskExplanation}
             </p>
 
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {factors.slice(0, 3).map((factor, i) => (
-                <div key={i} className="stamp-badge" style={{
-                  fontSize: '10px',
+                <div key={i} style={{
+                  fontSize: '11px',
+                  padding: '3px 10px',
+                  borderRadius: '980px',
                   backgroundColor: factor.direction === 'increases risk' ? 'var(--danger-light)' : 'var(--success-light)',
                   color: factor.direction === 'increases risk' ? 'var(--danger)' : 'var(--success)',
-                  borderColor: factor.direction === 'increases risk' ? 'var(--danger)' : 'var(--success)',
-                  fontWeight: 700
+                  fontWeight: 600
                 }}>
                   {factor.label}
                 </div>
@@ -324,22 +349,24 @@ export default function StudentDashboard() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', marginBottom: '24px' }}>
           
           {/* PERFORMANCE RADAR */}
-          <div style={{ backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-sm)', padding: '24px', boxShadow: '3px 3px 0px var(--ink)', border: '2px solid var(--ink)' }}>
-            <div className="stamp-badge" style={{ borderColor: 'var(--ink)', color: 'var(--ink)', marginBottom: '8px' }}>
-              [ 6-AXIS TELEMETRY ]
+          <div style={{ backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-xl)', padding: '24px', boxShadow: 'var(--shadow-card)', border: '0.5px solid var(--border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+                  Performance Radar Profile
+                </h3>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>6-Axis Academic & Behavioral Telemetry</div>
+              </div>
             </div>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 16px', color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Performance Radar Profile
-            </h3>
             
             <div style={{ height: '240px', marginBottom: '18px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                  <PolarGrid stroke="var(--ink)" strokeDasharray="3 3" opacity={0.3} />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--ink)', fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 600 }} />
+                <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
+                  <PolarGrid stroke="var(--border)" strokeDasharray="3 3" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 600 }} />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                  <Radar name="Student" dataKey="A" stroke="var(--ink)" fill="var(--accent)" fillOpacity={0.3} strokeWidth={2} />
-                  <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '2px solid var(--ink)', borderRadius: '4px', boxShadow: '2px 2px 0px var(--ink)', fontFamily: 'var(--font-mono)' }} />
+                  <Radar name="Student Profile" dataKey="A" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.25} strokeWidth={2} />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '0.5px solid var(--border)', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-md)', color: 'var(--text-primary)' }} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
@@ -347,12 +374,12 @@ export default function StudentDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {radarData.map(m => (
                 <div key={m.subject} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '90px', fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', fontWeight: 600 }}>{m.subject}</div>
-                  <Progress.Root style={{ flex: 1, height: '8px', backgroundColor: 'var(--surface-2)', border: '1px solid var(--ink)', borderRadius: '2px', overflow: 'hidden' }} value={m.A}>
+                  <div style={{ width: '90px', fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>{m.subject}</div>
+                  <Progress.Root style={{ flex: 1, height: '8px', backgroundColor: 'var(--surface-2)', borderRadius: '4px', overflow: 'hidden' }} value={m.A}>
                     <Progress.Indicator style={{ width: `${m.A}%`, height: '100%', backgroundColor: 'var(--accent)', transition: 'width 0.5s ease' }} />
                   </Progress.Root>
-                  <div style={{ width: '40px', textAlign: 'right', fontSize: '12px', fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-mono)' }}>
-                    {Math.round(m.A)}
+                  <div style={{ width: '50px', textAlign: 'right', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+                    {m.raw}
                   </div>
                 </div>
               ))}
@@ -360,11 +387,11 @@ export default function StudentDashboard() {
           </div>
 
           {/* GOALS CARD */}
-          <div style={{ backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-sm)', padding: '24px', boxShadow: '3px 3px 0px var(--ink)', border: '2px solid var(--ink)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-xl)', padding: '24px', boxShadow: 'var(--shadow-card)', border: '0.5px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Trophy size={16} color="var(--accent)" />
-                <h3 style={{ fontSize: '15px', fontWeight: 700, margin: 0, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <Trophy size={18} color="var(--accent)" />
+                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
                   Personal Targets
                 </h3>
               </div>
@@ -379,18 +406,31 @@ export default function StudentDashboard() {
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', flex: 1 }}>
-              {displayGoals.map((g, i) => {
-                const current = g.current_value || g.value || 0
-                const target = g.target_value || g.target || 100
-                const pct = g.progress_pct || Math.min(100, Math.round((current / target) * 100))
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
+              {displayGoals.length === 0 ? (
+                <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                  No target goals set yet. Click "+ Set Goal" to track attendance or GPA targets!
+                </div>
+              ) : displayGoals.map((g, i) => {
+                const current = g.current_value ?? g.value ?? 0
+                const target = g.target_value ?? g.target ?? 100
+                const pct = g.progress_pct || Math.min(100, Math.round((current / (target || 1)) * 100))
+                const isGpa = (g.goal_type === 'gpa') || (g.title || '').toLowerCase().includes('gpa')
+                const isPctMetric = (g.goal_type === 'attendance' || g.goal_type === 'assignment') || (g.title || '').toLowerCase().includes('rate') || (g.title || '').toLowerCase().includes('submission')
+
+                let formattedVal = `${current} / ${target}`
+                if (isGpa) {
+                  formattedVal = `${Number(current).toFixed(2)} / ${Number(target).toFixed(1)} GPA`
+                } else if (isPctMetric) {
+                  formattedVal = `${Math.round(current)}% / ${Math.round(target)}%`
+                }
 
                 return (
-                  <div key={i} style={{ backgroundColor: 'var(--surface-2)', padding: '14px 16px', borderRadius: 'var(--radius-md)' }}>
+                  <div key={i} style={{ backgroundColor: 'var(--surface-2)', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '0.5px solid var(--border)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{g.title || g.label}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{g.title || g.label || g.goal_type?.toUpperCase()}</div>
                       <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', fontFamily: 'monospace' }}>
-                        {g.isStreak ? `${current} wks streak` : `${current}${g.suffix || ''} / ${target}${g.suffix || ''}`}
+                        {g.isStreak ? `${current} wks streak` : formattedVal}
                       </div>
                     </div>
                     {!g.isStreak ? (
@@ -490,14 +530,20 @@ export default function StudentDashboard() {
                     8-Week Wellbeing Trend
                   </h4>
                   <div style={{ height: '180px' }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={checkinTrendData}>
-                        <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} />
-                        <YAxis domain={[0, 10]} hide />
-                        <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', borderRadius: 'var(--radius-sm)' }} />
-                        <Line type="monotone" dataKey="score" stroke="var(--accent)" strokeWidth={2.5} dot={{ r: 4, fill: 'var(--surface)', stroke: 'var(--accent)', strokeWidth: 2 }} />
-                      </LineChart>
-                    </ResponsiveContainer>
+                    {checkinTrendData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={checkinTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                          <XAxis dataKey="week" axisLine={{ stroke: 'var(--border)' }} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} />
+                          <YAxis domain={[0, 10]} tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                          <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)' }} />
+                          <Line type="monotone" dataKey="score" stroke="var(--accent)" strokeWidth={2.5} dot={{ r: 4, fill: 'var(--surface)', stroke: 'var(--accent)', strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)', fontSize: '12px' }}>
+                        No check-in trend data logged yet
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

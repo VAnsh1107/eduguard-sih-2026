@@ -163,6 +163,8 @@ def predict(features: dict, institution_id: int | None = None) -> dict:
         X_scaled_df = pd.DataFrame(X_s, columns=_feature_cols)
 
         # 1. Native-space SHAP calculation
+        xgb_model = _model.named_estimators_["xgb"]
+        rf_model  = _model.named_estimators_["rf"]
         xgb_explainer = explainers["xgb"]
         rf_explainer  = explainers["rf"]
 
